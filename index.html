@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fleet &amp; Rider CRM</title>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="backend.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f5f8;--card:#fff;--ink:#14213d;--mute:#6b7689;--line:#e3e8ef;--pri:#0f766e;--acc:#14b8a6;--warn:#d97706;--bad:#dc2626;--ok:#16a34a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1420;--card:#172033;--ink:#e8edf6;--mute:#93a0b8;--line:#263248;--pri:#2dd4bf;--acc:#14b8a6;--warn:#fbbf24;--bad:#f87171;--ok:#4ade80}}
+:root[data-theme="dark"]{--bg:#0e1420;--card:#172033;--ink:#e8edf6;--mute:#93a0b8;--line:#263248;--pri:#2dd4bf;--acc:#14b8a6;--warn:#fbbf24;--bad:#f87171;--ok:#4ade80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(120deg,#0b3b3a,#0f766e);color:#fff;padding:14px 22px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+h1{margin:0;font-size:19px}header small{opacity:.8}
+nav{display:flex;gap:4px;padding:8px 22px 0;flex-wrap:wrap}
+button,.b{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font:inherit;font-weight:600;cursor:pointer}
+button.p{background:var(--acc);color:#04201e;border-color:transparent}
+.tab{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;color:var(--mute)}.tab.on{color:var(--ink);border-color:var(--acc)}
+main{padding:14px 22px;max-width:1500px;margin:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:12px}
+.k{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}
+.k .l{font-size:11px;color:var(--mute);text-transform:uppercase}.k .v{font-size:23px;font-weight:700}.k .s{font-size:11px;color:var(--mute)}
+h2{font-size:14px;margin:0 0 8px}
+label{display:block;font-size:11px;color:var(--mute);text-transform:uppercase;margin:7px 0 2px}
+input,select,textarea{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{display:inline-block;padding:3px 10px;margin:2px;border-radius:99px;border:1px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;color:var(--mute)}.chip.on{background:var(--acc);color:#04201e;border-color:transparent}
+.tw{overflow:auto;max-height:520px}table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{position:sticky;top:0;background:var(--card);text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);color:var(--mute);cursor:pointer;white-space:nowrap}
+td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}.n{text-align:right}
+.t{padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700}.d{background:rgba(22,163,74,.15);color:var(--ok)}.m{background:rgba(217,119,6,.15);color:var(--warn)}.x{background:rgba(220,38,38,.13);color:var(--bad)}
+td a{color:var(--pri);font-weight:600;text-decoration:none}a[data-prof]{cursor:pointer;text-decoration:underline}td button{padding:2px 7px;font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:8px}.bar>div{min-width:150px}
+
+.kc{cursor:pointer;transition:transform .12s,border-color .12s}.kc:hover{transform:translateY(-2px);border-color:var(--acc)}
+tr.cl{cursor:pointer}tr.cl:hover td{background:rgba(20,184,166,.12)}a[data-vp]{cursor:pointer;text-decoration:underline;color:var(--pri);font-weight:600}
+@media (max-width:760px){header{padding:10px 14px}h1{font-size:16px}main{padding:10px 12px}nav{padding:6px 12px 0;flex-wrap:nowrap;overflow-x:auto}nav .tab{white-space:nowrap;flex:none;padding:7px 10px}.r2{grid-template-columns:1fr}.g{grid-template-columns:1fr}.k{grid-template-columns:repeat(2,1fr)}.bar>div{min-width:100%}.bar button{flex:1}.mod{padding:0;align-items:flex-end}.mod .card{max-width:100%!important;max-height:94vh!important;border-radius:14px 14px 0 0}.tw{max-height:420px}th,td{padding:5px 6px}.k .v{font-size:19px}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 15px;border-radius:8px;display:none;z-index:30}
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:flex;align-items:center;justify-content:center;padding:14px}.mod .card{max-width:480px;width:100%}
+.note{font-size:12px;color:var(--mute)}
+</style></head><body>
+<header><div><h1>⚡ Fleet &amp; Rider CRM</h1><small id="st">Connecting…</small></div><div class="note" style="color:#fff;opacity:.85" id="ro"></div></header>
+<nav id="nav"><button class="tab on" data-v="dash">Dashboard</button><button class="tab" data-v="riders">Riders CRM</button><button class="tab" data-v="fleet">Fleet</button><button class="tab" data-v="docs">Documents</button><button class="tab" data-v="service">Service</button><button class="tab" data-v="daily">Daily report</button><button class="tab" data-v="bulk">Bulk payments</button><button class="tab" data-v="rep">Reports</button><button class="tab" data-v="onb">Onboarding</button><button class="tab" data-v="log">Activity log</button><button class="tab" data-v="staff">Staff</button></nav>
+<main>
+<section id="v-dash">
+ <div class="k" id="kp"></div>
+ <div class="g">
+  <div class="card"><h2>1 · Vehicle allotment</h2>
+   <div class="r2"><div><label>Date</label><input type="date" id="aD"></div><div><label>Daily rent (₹)</label><input type="number" id="aP"></div></div>
+   <label>Rider (VRP ID or name)</label><input id="aR" list="rl" autocomplete="off"><label>Vehicle (available only)</label><input id="aV" list="vA" autocomplete="off">
+   <div class="r2"><div><label>Security deposit received (₹)</label><input type="number" id="aS"></div><div><label>Note</label><input id="aN"></div></div>
+   <p><button class="p" id="bA">Record allotment</button></p></div>
+  <div class="card"><h2>2 · Vehicle submission (return)</h2>
+   <div class="r2"><div><label>Date</label><input type="date" id="sD"></div><div><label>Condition</label><select id="sC"><option value="A">Returned – ready for reuse</option><option value="M">Needs maintenance</option></select></div></div>
+   <label>Vehicle (deployed only)</label><input id="sV" list="vD" autocomplete="off"><div class="r2"><div><label>Damage / maintenance charge (₹)</label><input type="number" id="sA"></div><div><label>Note</label><input id="sN"></div></div>
+   <p class="note" id="sI"></p><p><button class="p" id="bS">Record submission</button></p></div>
+  <div class="card"><h2>3 · Payment receipt</h2>
+   <div class="r2"><div><label>Date</label><input type="date" id="pD"></div><div><label>Amount (₹)</label><input type="number" id="pA"></div></div>
+   <label>Rider (VRP ID or name)</label><input id="pR" list="rl" autocomplete="off"><p class="note" id="pI"></p>
+   <div class="r2"><div><label>Head</label><select id="pH"><option>Rental</option><option>Maintenance</option><option>Security deposit</option><option>Other</option></select></div><div><label>Mode</label><select id="pM"><option>Cash</option><option>UPI</option><option>Bank</option></select></div></div>
+   <div class="r2"><div><label>Reference</label><input id="pF"></div><div><label>Note</label><input id="pN"></div></div>
+   <p><button class="p" id="bP">Record payment</button></p></div>
+  <div class="card"><h2>4 · EV exchange (vehicle swap)</h2><p class="note">Swap the vehicle a rider is using for another one (breakdown, battery issue, accident, upgrade). Rent stops on the old vehicle and starts on the new one the same day.</p>
+<div class="r2"><div><label>Date</label><input type="date" id="xD"></div><div><label>Reason</label><select id="xW"><option>Breakdown</option><option>Battery issue</option><option>Accident</option><option>Upgrade / downgrade</option><option>Rider request</option><option>Other</option></select></div></div>
+<label>Current vehicle (deployed)</label><input id="xO" list="vD" autocomplete="off"><label>Replacement vehicle (available)</label><input id="xN" list="vA" autocomplete="off"><p class="note" id="xI"></p>
+<div class="r2"><div><label>Old vehicle condition</label><select id="xC"><option value="M">Needs maintenance</option><option value="A">Fine – ready for reuse</option></select></div><div><label>Daily rent, new vehicle (₹)</label><input type="number" id="xP"></div></div>
+<div class="r2"><div><label>Charge to rider (₹, optional)</label><input type="number" id="xA"></div><div><label>Note</label><input id="xT"></div></div><p><button class="p" id="bX">Record exchange</button></p></div>
+ </div>
+ <div class="g"><div class="card"><h2>Receivable by rider status</h2><div id="sp"></div></div><div class="card"><h2>Latest entries</h2><div class="tw" id="rc" style="max-height:260px"></div></div><div class="card"><h2>EV exchange history</h2><p class="note" id="xk" style="margin:0 0 6px"></p><div class="tw" id="xL" style="max-height:260px"></div></div></div>
+</section>
+<section id="v-riders" hidden><div class="card">
+ <div class="bar"><div><label>Search</label><input id="rq" placeholder="Name, VRP ID or mobile"></div><div><label>Balance</label><select id="rb"><option value="d">Dues only</option><option value="a">All riders</option></select></div>
+ <div><label>Status</label><span id="rs"></span></div><div><label>Priority</label><span id="rp"></span></div><button id="rx">Export CSV</button><button id="rn">+ New rider</button></div>
+ <div class="tw" id="rt"></div><p class="note" id="rm"></p></div></section>
+<section id="v-fleet" hidden><div class="card">
+ <div class="bar"><div><label>Search</label><input id="fq" placeholder="Vehicle, model, chassis or rider"></div><div><label>Status</label><span id="fs"></span></div><button id="fn">+ New vehicle</button></div>
+ <div class="tw" id="ft"></div></div></section>
+<section id="v-log" hidden><div class="card"><h2>All recorded entries</h2><div class="tw" id="lg" style="max-height:640px"></div></div></section>
+<section id="v-docs" hidden><div class="g"><div class="card"><h2>Upload rider document</h2><label>Rider (VRP ID or name)</label><input id="dR" list="rl" autocomplete="off"><div class="r2"><div><label>Type</label><select id="dT"><option>Aadhaar</option><option>Driving licence</option><option>PAN</option><option>Agreement</option><option>Photo</option><option>Address proof</option><option>Other</option></select></div><div><label>Expiry (optional)</label><input type="date" id="dE"></div></div><label>File</label><input type="file" id="dF"><p class="note" id="dI"></p><p><button class="p" id="bD">Upload</button></p><p class="note">KYC files are private: only signed-in staff can open them.</p></div><div class="card"><h2>Documents on file</h2><div class="tw" id="dl" style="max-height:420px"></div></div></div></section>
+<section id="v-service" hidden><div class="g"><div class="card"><h2>Log vehicle service</h2><div class="r2"><div><label>Date</label><input type="date" id="vD"></div><div><label>Type</label><select id="vT"><option>Routine service</option><option>Repair</option><option>Battery</option><option>Tyre / brake</option><option>Accident</option><option>Other</option></select></div></div><label>Vehicle</label><input id="vV" list="vAll" autocomplete="off"><div class="r2"><div><label>Cost (₹)</label><input type="number" id="vC"></div><div><label>Vendor / garage</label><input id="vG"></div></div><div class="r2"><div><label>Odometer (km)</label><input type="number" id="vK"></div><div><label>Next service due</label><input type="date" id="vN"></div></div><label>Work done</label><input id="vW"><p class="note" id="vI"></p><label style="text-transform:none"><input type="checkbox" id="vR" style="width:auto"> Mark vehicle available after service</label><p><button class="p" id="bV">Save service record</button></p></div><div class="card"><h2>Service history</h2><label>Filter by vehicle</label><input id="vQ" placeholder="Vehicle ID"><div class="tw" id="vl" style="max-height:440px"></div></div></div></section>
+<section id="v-rep" hidden><div class="card"><div class="bar"><div><label>Period</label><select id="pX"><option value="w">Weekly</option><option value="m" selected>Monthly</option></select></div><button id="rpx">Export CSV</button></div><div class="tw" id="rpt" style="max-height:none"></div><p class="note">Rent billed = daily rent on deployed vehicles recorded in this app (opening balances before the start date are not included). Collected = rental + maintenance receipts.</p></div></section>
+<section id="v-daily" hidden><div class="card"><h2>Daily sales report (with payments received)</h2><div class="bar"><div><label>From</label><input type="date" id="rF"></div><div><label>To</label><input type="date" id="rT"></div><label style="text-transform:none"><input type="checkbox" id="rA" style="width:auto"> Include non-deployed vehicles</label><button class="p" id="rX">Download Excel</button><button id="rC">Download CSV</button></div><div class="tw" id="rS" style="max-height:480px"></div><p class="note">Excel has three sheets: Summary (per day), Daily Sales (one row per deployed vehicle with rent billed, and the rider’s payment received that day) and Payments received (every receipt). Covers days recorded in this app, after the opening date; earlier days are in your workbook.</p></div></section>
+<section id="v-bulk" hidden><div class="card"><h2>Bulk payment upload</h2><p class="note">Upload an Excel or CSV file with columns <b>Date, VRP ID, Amount, Head, Mode, Reference, Note</b>. Head: Rental / Maintenance / Security deposit / Other (blank = Rental). Mode: Cash / UPI / Bank. If VRP ID is blank, a Mobile or exact Name column is used. Dates must be after the opening date. Rows with problems and duplicates are skipped.</p><div class="bar"><button id="bT">Download template</button><div><label>File</label><input type="file" id="bF" accept=".csv,.xlsx,.xls,.xlsm"></div><button class="p" id="bGo" disabled>Record payments</button></div><div class="tw" id="bPv" style="max-height:360px"></div></div><div class="card" style="margin-top:12px"><h2>Previous bulk uploads</h2><div class="tw" id="bH" style="max-height:240px"></div></div></section>
+<section id="v-onb" hidden><div class="g"><div class="card"><h2>New applicant</h2><div class="r2"><div><label>Name</label><input id="oN"></div><div><label>Mobile</label><input id="oM"></div></div><label>Address</label><input id="oA"><div class="r2"><div><label>Driving licence no.</label><input id="oD"></div><div><label>ID proof</label><select id="oP"><option>Aadhaar</option><option>Voter ID</option><option>PAN</option><option>Other</option></select></div></div><div class="r2"><div><label>Referred by</label><input id="oF"></div><div><label>Emergency contact</label><input id="oE"></div></div><label>Note</label><input id="oT"><p><button class="p" id="oGo">Add applicant</button></p><p class="note">Applicants who register in the rider app send you their details by WhatsApp or share sheet — enter them here, then move them through the pipeline.</p></div><div class="card"><h2>Onboarding pipeline</h2><div class="tw" id="oL" style="max-height:460px"></div></div></div></section>
+<section id="v-staff" hidden><div class="g"><div class="card"><h2>Your access</h2><p><b id="me"></b></p><p class="note">Everyone signs in with email. New accounts start as <b>Viewer</b> (a rider: sees only their own wallet). The owner promotes staff in Supabase (SQL editor): <b>Contributor</b> records allotments, returns, payments, exchanges, calls, documents, service and rider details; <b>Editor</b> also edits or deletes payments, posts wallet adjustments and changes opening data. See README.md.</p><p class="note"><b>Rider app:</b> the rider creates an account, you link it from Riders → profile → Wallet, then send them this site’s address with <b>#rider</b> added at the end.</p></div><div class="card" id="seedCard"><h2>Load opening data (editors)</h2><p class="note">One-time: choose <b>riders.json, fleet.json, hist1.json … hist4.json</b> from your private opening-data folder. They are saved to your Supabase database, never to GitHub.</p><input type="file" id="seedF" multiple accept=".json"></div><div class="card"><h2>Staff activity (who recorded what)</h2><div class="tw" id="sa" style="max-height:360px"></div></div></div></section>
+</main>
+<div id="rapp" hidden style="max-width:520px;margin:auto;padding:14px"><h1 style="font-size:20px;margin:6px 0">⚡ Rider app</h1><div><button class="tab on" id="rtW">My wallet</button><button class="tab" id="rtR">Register</button></div><div id="rw"><p class="note">Loading…</p></div>
+<div id="rr" hidden class="card" style="margin-top:10px"><h2>Register as a rider</h2><label>Full name</label><input id="rn"><label>Mobile number</label><input id="rm" type="tel"><label>Address</label><input id="ra"><label>Driving licence number</label><input id="rd"><div class="r2"><div><label>ID proof</label><select id="ri"><option>Aadhaar</option><option>Voter ID</option><option>PAN</option></select></div><div><label>Referred by</label><input id="rf"></div></div><label>Emergency contact (name and number)</label><input id="re"><p class="note">Bring your ID proof, driving licence and a passport photo to the office.</p><p><button class="p" id="rSh">Share application with the office</button></p><textarea id="rO" hidden readonly style="height:130px"></textarea></div></div>
+<datalist id="rl"></datalist><datalist id="vAll"></datalist><datalist id="vA"></datalist><datalist id="vD"></datalist><div id="toast"></div>
+<script>
+async function loadSeedFiles(files){ if(!canEdit)return toast('Only editors can load opening data');
+  const done=[]; for(const f of files){ const m=f.name.match(/^(riders|fleet|hist\d+)\.json$/i); if(!m){toast('Skipped '+f.name);continue}
+    let d; try{d=JSON.parse(await f.text())}catch(e){return toast('Not valid JSON: '+f.name)}
+    if(m[1].toLowerCase()==='riders'&&!Array.isArray(d.items))return toast('riders.json looks wrong');
+    try{await db.doc('masters/'+m[1].toLowerCase()).set(d);done.push(m[1].toLowerCase())}catch(x){return toast('Could not save '+f.name+': '+(x&&x.message||x))} }
+  if(done.length)setTimeout(()=>location.reload(),1500)}
+$('#seedF').onchange=e=>loadSeedFiles([...e.target.files]);
+
+const $=s=>document.querySelector(s),iso=d=>d.toISOString().slice(0,10),TODAY=iso(new Date());
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN'),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P=s=>Date.parse(s+'T00:00:00Z'),addD=(s,n)=>iso(new Date(P(s)+n*864e5)),diff=(a,b)=>Math.round((P(b)-P(a))/864e5);
+const fd=s=>s?new Date(P(s)).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}):'–';
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3400)}
+const RIDER=location.hash==='#rider';let db,U=null,HS={},INFO={},ADJ=[],LK={},ONB=[],UID='',NM={},DOCS=[],SVC=[],SEG=[],canEdit=false,MR=null,MF=null,EV=[],R={},V={},RL=[],ST={rs:new Set(),rp:new Set(),fs:new Set()},SO={r:['due',-1],f:['id',1]};
+const val=i=>$('#'+i).value.trim(),rid=s=>s.split(/\s|—/)[0].toUpperCase(),vid=s=>s.split(/\s|—/)[0].toUpperCase();
+const CALLS=['Called – no answer','Promised to pay','Paid','Wrong number','Refused','Switched off','Callback requested'];
+function compute(){
+  const as=MR.asOf;R={};V={};const open={};
+  MR.items.forEach(([id,n,m,pl,ob,lp,la,rc,rr,sh,mt,fd,dd])=>R[id]={id,n,m,pl:pl||210,ob,lp,la,rent:0,chg:0,paid:0,vs:[],call:null,sd:0,sts:[],x:{rc,rr,sh,mt,fd,dd}});
+  MF.items.forEach(([id,mo,ch,c,r])=>{V[id]={id,mo,ch,st:c,rd:r,since:as};if(c==='D'&&R[r]){const st={v:id,a:'',b:'',pl:R[r].pl,seed:1};R[r].sts.push(st);open[id]={r,start:addD(as,1),pl:R[r].pl,st};R[r].vs.push(id)}});
+  SEG=[];const acc=(sg,end)=>{const days=Math.max(0,diff(sg.start,end));SEG.push({a:sg.start,b:end,pl:sg.pl});R[sg.r]&&(R[sg.r].rent+=days*sg.pl)};
+  for(const e of EV){
+    if(e.t==='rider'&&!R[e.r])R[e.r]={id:e.r,n:e.n,m:e.m||'',pl:e.p||210,ob:0,lp:'',la:0,rent:0,chg:0,paid:0,vs:[],call:null,sd:0,sts:[],x:{}};
+    else if(e.t==='vehicle'&&!V[e.v])V[e.v]={id:e.v,mo:e.mo||'',ch:e.ch||'',st:'A',rd:'',since:e.d};
+    else if(e.t==='allot'&&V[e.v]&&R[e.r]){V[e.v].st='D';V[e.v].rd=e.r;V[e.v].since=e.d;const st={v:e.v,a:e.d,b:'',pl:e.p};R[e.r].sts.push(st);open[e.v]={r:e.r,start:e.d,pl:e.p,st};R[e.r].vs.push(e.v)}
+    else if(e.t==='submit'&&V[e.v]){const v=V[e.v],r=R[v.rd];e._r=r?r.id:'';if(open[e.v]){open[e.v].st.b=e.d;acc(open[e.v],e.d);delete open[e.v]}if(r){r.vs=r.vs.filter(x=>x!==e.v);r.chg+=+e.a||0}v.st=e.c==='M'?'M':'A';v.rd='';v.since=e.d}
+    else if(e.t==='exch'&&V[e.v0]&&V[e.v1]){const r=R[V[e.v0].rd]||R[e.r];e._r=r?r.id:e.r;if(open[e.v0]){open[e.v0].st.b=e.d;acc(open[e.v0],e.d);delete open[e.v0]}V[e.v0].st=e.c==='M'?'M':'A';V[e.v0].rd='';V[e.v0].since=e.d;
+      if(r){r.vs=r.vs.filter(x=>x!==e.v0);r.chg+=+e.a||0;const pl=+e.p||r.pl,st={v:e.v1,a:e.d,b:'',pl};r.sts.push(st);open[e.v1]={r:r.id,start:e.d,pl,st};r.vs.push(e.v1);V[e.v1].st='D';V[e.v1].rd=r.id;V[e.v1].since=e.d}}
+    else if(e.t==='vstat'&&V[e.v]&&V[e.v].st!=='D'){V[e.v].st=e.s;V[e.v].since=e.d}
+    else if(e.t==='pay'&&R[e.r]){const r=R[e.r];if(e.h==='Rental'||e.h==='Maintenance')r.paid+=+e.a;if(e.h==='Security deposit')r.sd+=+e.a;if(e.h==='Rental'){if(e.d>r.lp){r.lp=e.d;r.la=+e.a}else if(e.d===r.lp)r.la+=+e.a}}
+    else if(e.t==='call'&&R[e.r])R[e.r].call=e;
+  }
+  ADJ.forEach(a=>{const r=R[a.r];if(r){if(a.k==='C')r.adjc=(r.adjc||0)+ +a.a;else r.adjd=(r.adjd||0)+ +a.a}});Object.entries(INFO).forEach(([id,i])=>{const r=R[id];if(r){if(i.m)r.m=i.m;r.em=i.em||'';r.ad=i.ad||'';r.gs=i.gs||(i.g&&i.g.n?[i.g]:[]);r.iu=i}});for(const v in open)acc(open[v],addD(TODAY,1));
+  RL=Object.values(R).map(r=>{r.due=r.ob+r.rent+r.chg+(r.adjd||0)-r.paid-(r.adjc||0);r.dd=r.due>0?r.due/r.pl:0;r.sp=r.lp?diff(r.lp,TODAY):null;
+    const stale=r.sp===null||r.sp>=7;r.pr=r.due<=0?'Clear':(r.dd>=7||(r.dd>=2&&stale))?'High':(r.dd>=3||(r.sp!==null&&r.sp>=3))?'Medium':'Low';
+    r.stn=r.vs.length?'Deployed':'Not deployed';r.po={High:3,Medium:2,Low:1,Clear:0}[r.pr];return r});
+}
+const tag=(c,t)=>`<span class="t ${c}">${esc(t)}</span>`,chips=(id,list)=>$('#'+id).innerHTML=list.map(s=>`<span class="chip ${ST[id].has(s)?'on':''}" data-c="${id}" data-s="${s}">${s}</span>`).join('');
+function render(){
+  if(!MR||!MF)return;
+  const Vs=Object.values(V),cnt=c=>Vs.filter(v=>v.st===c).length,D=RL.filter(r=>r.due>0),sum=a=>a.reduce((s,r)=>s+r.due,0);
+  const pays=EV.filter(e=>e.t==='pay'&&(e.h==='Rental'||e.h==='Maintenance')),p30=pays.filter(e=>diff(e.d,TODAY)<30&&diff(e.d,TODAY)>=0).reduce((s,e)=>s+ +e.a,0),pt=pays.filter(e=>e.d===TODAY).reduce((s,e)=>s+ +e.a,0);
+  const K=[['Fleet size',Vs.length,'vehicles registered'],['Deployed',cnt('D'),(Vs.length?cnt('D')/Vs.length*100:0).toFixed(1)+'% utilization'],['Available',cnt('A'),'ready to allot'],['Under maintenance',cnt('M'),'off the road'],
+    ['Total receivable',inr(sum(D)),D.length+' riders with dues'],['High priority',D.filter(r=>r.pr==='High').length,'call first'],['Collected today',inr(pt),'rent + maintenance'],['Collected 30 days',inr(p30),'recorded here'],['EV exchanges',EV.filter(e=>e.t==='exch'&&e.d.startsWith(TODAY.slice(0,7))).length,'this month · click for list']];
+  $('#kp').innerHTML=K.map((k,i)=>`<div class="card k kc" data-kd="${['fleet','dep','avail','maint','due','high','today','d30','exch'][i]}" title="Click for details" style="display:block;margin:0"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+  $('#sp').innerHTML='<table><tr><th>Status</th><th class="n">Riders with dues</th><th class="n">Receivable</th><th class="n">High</th></tr>'+['Deployed','Not deployed'].map(s=>{const x=D.filter(r=>r.stn===s);return`<tr class="cl" data-kd="${s==='Deployed'?'rdep':'rnd'}"><td>${tag(s==='Deployed'?'d':'x',s)}</td><td class="n">${x.length}</td><td class="n"><b>${inr(sum(x))}</b></td><td class="n">${x.filter(r=>r.pr==='High').length}</td></tr>`}).join('')+'</table>';
+  const rl=e=>e.t==='allot'?`${e.v} → ${R[e.r]?.n||e.r}`:e.t==='submit'?`${e.v} returned${e.c==='M'?' (maintenance)':''}`:e.t==='pay'?`${R[e.r]?.n||e.r} paid ${inr(e.a)} · ${e.h}`:e.t==='call'?`${R[e.r]?.n||e.r}: ${e.s}`:e.t==='exch'?`${R[e.r]?.n||e.r}: ${e.v0} → ${e.v1} (${e.w||'exchange'})`:e.t==='vstat'?`${e.v} → ${e.s==='M'?'Maintenance':'Available'}`:e.t==='rider'?`New rider ${e.n}`:`New vehicle ${e.v}`;
+  const ev=[...EV].reverse();
+  $('#rc').innerHTML=ev.length?'<table>'+ev.slice(0,8).map(e=>`<tr class="cl" data-evd="${e.id}"><td>${fd(e.d)}</td><td>${e.t}</td><td>${esc(rl(e))}</td></tr>`).join('')+'</table>':'<p class="note">No entries yet — record an allotment, submission or payment.</p>';
+  $('#lg').innerHTML='<table><tr><th>Date</th><th>Type</th><th>Details</th><th>Note</th><th>By</th><th></th></tr>'+ev.map(e=>`<tr><td>${fd(e.d)}</td><td>${e.t}</td><td>${esc(rl(e))}${e.ed?' <span class="t m" title="Edited after it was recorded">edited</span>':''}</td><td>${esc(e.n||e.f||'')}</td><td>${esc(e.by?(NM[e.by]||'Staff '+e.by.slice(0,6)):'–')}</td><td>${canEdit?`${e.t==='pay'?`<button data-epay="${e.id}">Edit</button> `:''}<button data-del="${e.id}">Delete</button>`:''}</td></tr>`).join('')+'</table>';
+  $('#rl').innerHTML=RL.map(r=>`<option value="${r.id} — ${esc(r.n)}">`).join('');
+  $('#vA').innerHTML=Vs.filter(v=>v.st==='A').map(v=>`<option value="${v.id} — ${esc(v.mo)}">`).join('');
+  $('#vD').innerHTML=Vs.filter(v=>v.st==='D').map(v=>`<option value="${v.id} — ${esc(R[v.rd]?.n||'')}">`).join('');
+  // riders
+  chips('rs',['Deployed','Not deployed']);chips('rp',['High','Medium','Low','Clear']);
+  const q=$('#rq').value.toLowerCase(),bal=$('#rb').value,[k,d]=SO.r;
+  const rows=RL.filter(r=>(bal==='a'||r.due>0)&&(!ST.rs.size||ST.rs.has(r.stn))&&(!ST.rp.size||ST.rp.has(r.pr))&&(!q||(r.id+r.n+r.m+(r.em||'')+(r.gs||[]).map(x=>x.n+x.m).join('')).toLowerCase().includes(q))).sort((a,b)=>{const x=a[k]??-1,y=b[k]??-1;return(typeof x==='number'?x-y:String(x).localeCompare(String(y)))*d||b.due-a.due});
+  const C=[['po','Priority',r=>tag({High:'x',Medium:'m',Low:'d',Clear:'d'}[r.pr],r.pr)],['id','VRP ID',r=>`<a data-prof="${r.id}">${r.id}</a>`],['n','Rider',r=>`<a data-prof="${r.id}">${esc(r.n)}</a>`],['m','Mobile',r=>r.m?`<a href="tel:+91${r.m}">${r.m}</a> <a target="_blank" rel="noopener" href="https://wa.me/91${r.m}?text=${encodeURIComponent(`Dear ${r.n}(${r.id}) - Your rental outstanding is Rs.${Math.round(r.due)}. Please pay immediately to continue services.`)}">💬</a>`:'–'],
+   ['stn','Status',r=>tag(r.vs.length?'d':'x',r.vs.length?'Deployed · '+r.vs.join(','):'Not deployed')],['pl','Plan/day',r=>inr(r.pl),1],['due','Receivable',r=>`<b>${inr(r.due)}</b>`,1],['dd','Dues (days)',r=>r.dd?r.dd.toFixed(1):'–',1],
+   ['lp','Last payment',r=>r.lp?`${fd(r.lp)} · ${inr(r.la)}`:'Never'],['sp','Days since',r=>r.sp??'–',1],['cl','Last call',r=>r.call?esc(r.call.s)+(r.call.pd?' · '+fd(r.call.pd):''):'–'],
+   ['x','',r=>`<button data-pay="${r.id}">💰</button> <button data-allot="${r.id}">🚲</button> <button data-call="${r.id}">📞</button>`]];
+  $('#rt').innerHTML=`<table><tr>${C.map(c=>`<th data-sr="${c[0]}" class="${c[3]?'n':''}">${c[1]}${SO.r[0]===c[0]?(d>0?' ▲':' ▼'):''}</th>`).join('')}</tr>`+rows.slice(0,300).map(r=>`<tr>${C.map(c=>`<td class="${c[3]?'n':''}">${c[2](r)}</td>`).join('')}</tr>`).join('')+'</table>';
+  $('#rm').textContent=`${rows.length} riders match`+(rows.length>300?' — showing first 300; refine filters or export':'')+'. 💰 payment · 🚲 allot · 📞 log call';
+  // fleet
+  chips('fs',['Deployed','Available','Maintenance']);const fq=$('#fq').value.toLowerCase(),nm={D:'Deployed',A:'Available',M:'Maintenance'};
+  const fr=Vs.filter(v=>(!ST.fs.size||ST.fs.has(nm[v.st]))&&(!fq||(v.id+v.mo+v.ch+(R[v.rd]?.n||'')).toLowerCase().includes(fq))).sort((a,b)=>a.id.localeCompare(b.id));
+  $('#ft').innerHTML='<table><tr><th>Vehicle</th><th>Model</th><th>Chassis</th><th>Status</th><th>Current rider</th><th class="n">Days in status</th><th>Last service</th><th></th></tr>'+fr.slice(0,400).map(v=>`<tr><td><a data-vp="${v.id}">${v.id}</a></td><td>${esc(v.mo)}</td><td>${esc(v.ch)}</td><td>${tag({D:'d',A:'x',M:'m'}[v.st],nm[v.st])}</td><td>${esc(R[v.rd]?.n||'–')}</td><td class="n">${diff(v.since,TODAY)}</td><td>${lastSvc(v.id)}</td><td><button data-svc="${v.id}">🔧</button> ${v.st==='D'?`<button data-ret="${v.id}">Submit return</button>`:`<select data-vs="${v.id}"><option value="A" ${v.st==='A'?'selected':''}>Available</option><option value="M" ${v.st==='M'?'selected':''}>Maintenance</option></select>`}</td></tr>`).join('')+'</table>';
+  const a=R[rid(val('pR'))];$('#pI').textContent=a?`${a.n} · receivable ${inr(a.due)} · last payment ${a.lp?fd(a.lp):'never'}`:'';
+  const sv=V[vid(val('sV'))];$('#sI').textContent=sv&&sv.st==='D'?`Rider: ${R[sv.rd]?.n||sv.rd} · deployed ${diff(sv.since,TODAY)} days`:'';render2();
+}
+async function add(e,col='events'){e.ts=Date.now();e.by=UID;try{await db.collection(col).add(e);return true}catch(x){toast(x&&x.code==='not_granted'?'You need Contributor access to record entries':'Could not save: '+(x&&x.message||x));return false}}
+const okD=d=>{if(!d||d<=MR.asOf){toast('Date must be after '+fd(MR.asOf)+' (opening balances are as of that date)');return false}return true};
+$('#bA').onclick=async()=>{const d=val('aD'),r=rid(val('aR')),v=vid(val('aV')),p=+val('aP'),s=+val('aS');if(!okD(d))return;
+  if(!R[r])return toast('Pick a valid rider');if(!V[v]||V[v].st!=='A')return toast('Pick an available vehicle');if(!p)return toast('Enter the daily rent');
+  if(await add({t:'allot',d,r,v,p,n:val('aN')})){if(s)await add({t:'pay',d,r,a:s,h:'Security deposit',m:'Cash',n:'With allotment'});['aR','aV','aS','aN'].forEach(i=>$('#'+i).value='');toast('Allotment recorded')}};
+$('#bS').onclick=async()=>{const d=val('sD'),v=vid(val('sV'));if(!okD(d))return;if(!V[v]||V[v].st!=='D')return toast('Pick a deployed vehicle');
+  if(await add({t:'submit',d,v,c:$('#sC').value,a:+val('sA')||0,n:val('sN')})){['sV','sA','sN'].forEach(i=>$('#'+i).value='');toast('Submission recorded')}};
+$('#bP').onclick=async()=>{const d=val('pD'),r=rid(val('pR')),a=+val('pA');if(!okD(d))return;if(!R[r])return toast('Pick a valid rider');if(!(a>0))return toast('Enter the amount');
+  if(await add({t:'pay',d,r,a,h:$('#pH').value,m:$('#pM').value,f:val('pF'),n:val('pN')})){['pR','pA','pF','pN'].forEach(i=>$('#'+i).value='');toast('Payment recorded')}};
+$('#aR').oninput=()=>{const r=R[rid(val('aR'))];if(r)$('#aP').value=r.pl};
+['pR','sV'].forEach(i=>$('#'+i).oninput=render);
+function modal(h){const o=document.createElement('div');o.className='mod';o.innerHTML='<div class="card">'+h+'</div>';document.body.appendChild(o);o.close=()=>o.remove();return o}
+function callModal(id){const r=R[id],o=modal(`<h2>${esc(r.n)} · ${id}</h2><p class="note">Receivable ${inr(r.due)} · ${r.m||'no mobile'}</p><label>Outcome</label><select id="cS">${CALLS.map(c=>`<option>${c}</option>`).join('')}</select><label>Promise-to-pay date</label><input type="date" id="cP"><label>Note</label><textarea id="cN"></textarea><p><button class="p" id="cOk">Save</button> <button id="cX">Cancel</button></p>`);
+  o.querySelector('#cX').onclick=o.close;o.querySelector('#cOk').onclick=async()=>{if(await add({t:'call',d:TODAY,r:id,s:o.querySelector('#cS').value,pd:o.querySelector('#cP').value,n:o.querySelector('#cN').value}))o.close()}}
+function newModal(kind){const rd=kind==='r',btn='<p><button class="p" id="nOk">Save</button> <button id="nX">Cancel</button></p>',
+  o=modal(rd?`<h2>New rider</h2><label>VRP ID</label><input id="nI" placeholder="VRP12345"><label>Name</label><input id="nN"><div class="r2"><div><label>Mobile</label><input id="nM"></div><div><label>Daily rent (₹)</label><input type="number" id="nP" value="210"></div></div>`+btn:`<h2>New vehicle</h2><label>Vehicle ID</label><input id="nI"><label>Model</label><input id="nN"><label>Chassis number</label><input id="nM">`+btn);
+  const g=i=>o.querySelector('#'+i).value.trim();o.querySelector('#nX').onclick=o.close;
+  o.querySelector('#nOk').onclick=async()=>{const id=g('nI').toUpperCase();if(!id||!g('nN'))return toast('ID and name are required');if(rd?R[id]:V[id])return toast('That ID already exists');
+    if(await add(rd?{t:'rider',d:TODAY,r:id,n:g('nN'),m:g('nM'),p:+g('nP')||210}:{t:'vehicle',d:TODAY,v:id,mo:g('nN'),ch:g('nM')}))o.close()}}
+document.addEventListener('click',async e=>{const t=e.target,ds=t.dataset||{};if((ds.pay||ds.allot||ds.updoc)&&t.closest&&t.closest('.mod'))t.closest('.mod').remove();
+  if(t.classList.contains('tab')){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b===t));['dash','riders','fleet','docs','service','daily','bulk','rep','onb','log','staff'].forEach(v=>$('#v-'+v).hidden=v!==ds.v)}
+  else if(ds.c){const s=ST[ds.c];s.has(ds.s)?s.delete(ds.s):s.add(ds.s);render()}
+  else if(ds.sr){SO.r=[ds.sr,SO.r[0]===ds.sr?-SO.r[1]:-1];render()}
+  else if(ds.pay){document.querySelector('[data-v=dash]').click();$('#pR').value=ds.pay;$('#pD').value=TODAY;render();$('#pA').focus()}
+  else if(ds.allot){document.querySelector('[data-v=dash]').click();$('#aR').value=ds.allot;$('#aR').oninput();$('#aV').focus()}
+  else if(ds.call)callModal(ds.call);
+  else if(ds.ret){document.querySelector('[data-v=dash]').click();$('#sV').value=ds.ret;render();$('#sA').focus()}
+  else if(ds.del&&confirm('Delete this entry? Balances will recalculate.'))db.doc('events/'+ds.del).delete().catch(x=>toast('Delete not allowed: '+(x.message||x)));
+  else if(ds.prof)profile(ds.prof);else if(ds.adj)doAdj(ds.adj);else if(ds.sinfo)saveInfo(ds.sinfo);else if(ds.epay)editPay(ds.epay);else if(t.id==='wF')findPeople();else if(ds.link)linkRider(ds.link,ds.rid);else if(ds.unlink)unlinkRider(ds.unlink);else if(t.id==='oGo')addOnb();else if(ds.oc)convOnb(ds.oc);else if(ds.updoc){document.querySelector('[data-v=docs]').click();$('#dR').value=ds.updoc;render2()}else if(ds.svc){document.querySelector('[data-v=service]').click();$('#vV').value=ds.svc;render2()}else if(t.id==='bD')upDoc();else if(t.id==='bV')saveSvc();else if(t.id==='rpx')expRep();else if(ds.dd&&confirm('Delete this document?'))delDoc(ds.dd);else if(t.id==='rn')newModal('r');else if(t.id==='fn')newModal('v');
+  else if(t.id==='rx'){const body=['VRP ID,Rider,Mobile,Status,Plan/day,Receivable,Dues days,Priority,Last payment,Last payment amount',...RL.filter(r=>r.due>0).map(r=>[r.id,r.n,r.m,r.stn,r.pl,Math.round(r.due),r.dd.toFixed(1),r.pr,r.lp,r.la].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))].join('\n');
+    try{const dl=await claude.use('downloads');if(!dl)throw 0;await dl.save({filename:'rider_dues.csv',data:'\ufeff'+body})}catch(x){if(x&&x.code==='declined')return;toast('Download is not available in this view')}}});
+document.addEventListener('change',async e=>{const v=e.target.dataset.vs;if(v)await add({t:'vstat',d:TODAY,v,s:e.target.value})});
+['rq','rb','fq'].forEach(i=>$('#'+i).oninput=render);$('#rb').onchange=render;
+['aD','sD','pD','vD','xD'].forEach(i=>$('#'+i).value=TODAY);['dR','vV','vQ','pX'].forEach(i=>$('#'+i).oninput=render2);$('#pX').onchange=render2;
+(async()=>{
+  if(RIDER){await riderApp();return}
+  const dead=setTimeout(()=>{if(!MR)$('#st').textContent='Still connecting… check that you are signed in and the data has been loaded.'},10000);
+  try{db=await claude.use('db');const u=await claude.use('user');canEdit=!!(u&&u.canEdit());U=u;UID=u?await u.id():''}catch(e){}
+  if(!db){$('#st').textContent='Sign in to continue';return}
+  $('#ro').textContent=canEdit?'Editor access':'Contributor access: can record entries';
+  db.collection('riderinfo').onSnapshot(s=>{INFO={};s.docs.forEach(d=>INFO[d.id]=d.data());if(MR){compute();render()}},()=>{});db.collection('adj').onSnapshot(s=>{ADJ=s.docs.map(d=>({id:d.id,...d.data()}));if(MR){compute();render()}},()=>{});db.collection('links').onSnapshot(s=>{LK={};s.docs.forEach(d=>LK[d.id]=d.data().uid);syncW()},()=>{});db.collection('onb').onSnapshot(s=>{ONB=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts);renderOnb()},()=>{});
+  db.collection('docs').onSnapshot(s=>{DOCS=s.docs.map(d=>({id:d.id,...d.data()}));render2()},()=>{});db.collection('service').onSnapshot(s=>{SVC=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.d.localeCompare(a.d));render2()},()=>{});
+  try{const [a,b]=await Promise.all([db.doc('masters/riders').get(),db.doc('masters/fleet').get()]);if(!a.exists||!b.exists){$('#st').textContent='Opening data not loaded yet. Editors: open the Staff tab and use Load opening data';return}MR=a.data();MF=b.data();HS={};await Promise.all(Array.from({length:MR.hn||0},(_,i)=>db.doc('masters/hist'+(i+1)).get().then(q=>{if(q.exists)Object.assign(HS,q.data().r)}).catch(()=>{})));clearTimeout(dead)}catch(e){$('#st').textContent='Could not read data: '+(e.message||e);return}
+  ['aD','sD','pD','xD'].forEach(i=>$('#'+i).min=addD(MR.asOf,1));
+  db.collection('events').onSnapshot(s=>{EV=s.docs.map(d=>({id:d.id,...d.data()})).filter(e=>!e.sup).sort((x,y)=>(x.d||'').localeCompare(y.d||'')||(x.ts||0)-(y.ts||0));compute();render();$('#st').textContent=`Live · opening balances as of ${fd(MR.asOf)} · ${EV.length} entries recorded`},e=>$('#st').textContent='Live updates failed: '+(e.message||e));
+})();
+
+const lastSvc=id=>{const x=SVC.find(s=>s.v===id);return x?fd(x.d):'–'};
+function names(ids){const need=ids.filter(i=>!(i in NM));if(need.length&&U&&U.profiles){need.forEach(i=>NM[i]='');U.profiles(need).then(p=>{need.forEach(i=>NM[i]=(p[i]&&p[i].name)||'');render()}).catch(()=>{})}}
+async function dlCsv(name,body){try{const dl=await claude.use('downloads');if(!dl)throw 0;await dl.save({filename:name,data:'\ufeff'+body})}catch(x){if(x&&x.code==='declined')return;toast('Download is not available in this view')}}
+const csv=rows=>rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+let REP=[];
+function render2(){
+  if(!MR)return;
+  $('#vAll').innerHTML=Object.values(V).map(v=>`<option value="${v.id}">${esc(v.mo)}</option>`).join('');
+  const need=['Aadhaar','Driving licence','Agreement'],dr=R[rid(val('dR'))];
+  $('#dI').textContent=dr?need.map(t=>(DOCS.some(d=>d.r===dr.id&&d.t===t)?'✔ ':'✘ ')+t).join(' · '):'';
+  $('#dl').innerHTML=DOCS.length?'<table><tr><th>Rider</th><th>Type</th><th>File</th><th>Expiry</th><th>Added</th><th></th></tr>'+[...DOCS].sort((a,b)=>b.ts-a.ts).slice(0,300).map(d=>{const x=d.e&&d.e<TODAY?'x':d.e&&diff(TODAY,d.e)<=30?'m':'d';return`<tr><td>${esc(R[d.r]?.n||d.r)}</td><td>${esc(d.t)}</td><td><a href="/_blob/${d.a}" target="_blank" rel="noopener">${esc(d.nm||'open')}</a></td><td>${d.e?tag(x,fd(d.e)):'–'}</td><td>${fd(iso(new Date(d.ts)))}</td><td>${canEdit?`<button data-dd="${d.id}">Delete</button>`:''}</td></tr>`}).join('')+'</table>':'<p class="note">No documents uploaded yet.</p>';
+  const sv=V[vid(val('vV'))];$('#vI').textContent=sv?`${sv.mo} · now ${{D:'deployed',A:'available',M:'in maintenance'}[sv.st]} · ${SVC.filter(s=>s.v===sv.id).length} past records`:'';
+  const q=val('vQ').toUpperCase(),S=SVC.filter(s=>!q||s.v.includes(q));
+  $('#vl').innerHTML=S.length?`<p class="note">${S.length} records · total cost ${inr(S.reduce((a,s)=>a+ +s.c,0))}</p><table><tr><th>Date</th><th>Vehicle</th><th>Type</th><th>Work</th><th>Vendor</th><th class="n">Cost</th><th class="n">Km</th><th>Next due</th></tr>`+S.slice(0,300).map(s=>`<tr><td>${fd(s.d)}</td><td>${s.v}</td><td>${esc(s.t)}</td><td>${esc(s.w||'')}</td><td>${esc(s.g||'')}</td><td class="n">${inr(s.c)}</td><td class="n">${s.k||'–'}</td><td>${s.n?tag(s.n<TODAY?'x':'d',fd(s.n)):'–'}</td></tr>`).join('')+'</table>':'<p class="note">No service records yet.</p>';
+  // reports
+  const mo=$('#pX').value==='m',key=d=>mo?d.slice(0,7):addD(d,-((new Date(P(d)).getUTCDay()+6)%7)),B={},g=k=>B[k]||(B[k]={k,al:0,rt:0,col:0,sd:0,chg:0,rent:0,svc:0,calls:0,rid:0});
+  EV.forEach(e=>{if(!e.d)return;const b=g(key(e.d));if(e.t==='allot')b.al++;else if(e.t==='submit'){b.rt++;b.chg+=+e.a||0}else if(e.t==='pay'){if(e.h==='Rental'||e.h==='Maintenance')b.col+=+e.a;else if(e.h==='Security deposit')b.sd+=+e.a}else if(e.t==='call')b.calls++;else if(e.t==='rider')b.rid++;else if(e.t==='exch')b.ex=(b.ex||0)+1});
+  SVC.forEach(s=>{if(s.d)g(key(s.d)).svc+=+s.c||0});SEG.forEach(sg=>{for(let d=sg.a;d<sg.b&&d<=TODAY;d=addD(d,1))g(key(d)).rent+=sg.pl});g(key(TODAY));
+  let dep=MF.items.filter(f=>f[3]==='D').length;const asc=Object.values(B).sort((a,b)=>a.k.localeCompare(b.k));asc.forEach(b=>{dep+=b.al-b.rt;b.dep=dep});
+  REP=asc.reverse();const mx=Math.max(...REP.map(b=>b.col),1),lb=k=>mo?new Date(P(k+'-01')).toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'}):'Week of '+fd(k);
+  $('#rpt').innerHTML='<table><tr><th>Period</th><th class="n">Rent billed</th><th>Collected</th><th class="n">Collection %</th><th class="n">Allotments</th><th class="n">Returns</th><th class="n">Deployed (end)</th><th class="n">Charges raised</th><th class="n">SD received</th><th class="n">Service cost</th><th class="n">Calls</th><th class="n">New riders</th><th class="n">Exchanges</th></tr>'+REP.map(b=>`<tr><td>${lb(b.k)}</td><td class="n">${inr(b.rent)}</td><td><div class="bar" style="min-width:90px;display:inline-flex;width:90px;height:8px;margin-right:6px"><div style="width:${b.col/mx*100}%;background:var(--acc)"></div></div>${inr(b.col)}</td><td class="n">${b.rent?Math.round(b.col/b.rent*100)+'%':'–'}</td><td class="n">${b.al}</td><td class="n">${b.rt}</td><td class="n">${b.dep}</td><td class="n">${inr(b.chg)}</td><td class="n">${inr(b.sd)}</td><td class="n">${inr(b.svc)}</td><td class="n">${b.calls}</td><td class="n">${b.rid}</td><td class="n">${b.ex||0}</td></tr>`).join('')+'</table>';
+  // staff
+  $('#me').textContent=!U?'Signed out':U.isOwner()?'Owner':canEdit?'Editor':U.can&&U.can('data.write')===false?'Viewer (read only)':'Contributor';
+  const by={};EV.forEach(e=>{const b=by[e.by||'']||(by[e.by||'']={n:0,al:0,rt:0,pay:0,amt:0,call:0,last:''});b.n++;if(e.t==='allot')b.al++;if(e.t==='submit')b.rt++;if(e.t==='call')b.call++;if(e.t==='pay'){b.pay++;if(e.h==='Rental'||e.h==='Maintenance')b.amt+=+e.a}if(e.d>b.last)b.last=e.d});
+  names(Object.keys(by).filter(Boolean).concat(EV.map(e=>e.by).filter(Boolean)));renderBulk();renderDaily();renderOnb();renderExch();syncW();
+  $('#sa').innerHTML=Object.keys(by).length?'<table><tr><th>Staff</th><th class="n">Entries</th><th class="n">Allotments</th><th class="n">Returns</th><th class="n">Payments</th><th class="n">Collected</th><th class="n">Calls</th><th>Last entry</th></tr>'+Object.entries(by).map(([k,b])=>`<tr><td>${esc(k?(NM[k]||'Staff '+k.slice(0,6)):'Unknown')}</td><td class="n">${b.n}</td><td class="n">${b.al}</td><td class="n">${b.rt}</td><td class="n">${b.pay}</td><td class="n">${inr(b.amt)}</td><td class="n">${b.call}</td><td>${fd(b.last)}</td></tr>`).join('')+'</table>':'<p class="note">No entries recorded yet.</p>';
+}
+async function upDoc(){const r=rid(val('dR')),f=$('#dF').files[0];if(!R[r])return toast('Pick a valid rider');if(!f)return toast('Choose a file');
+  let as=null;try{as=await claude.use('assets')}catch(e){}if(!as)return toast('Uploads are not enabled for your access level');
+  try{const u=await as.upload(f);if(await add({r,t:$('#dT').value,e:val('dE'),a:u.id,nm:f.name},'docs')){$('#dF').value='';$('#dE').value='';toast('Document uploaded')}}catch(x){toast('Upload failed: '+(x&&x.message||x))}}
+async function delDoc(id){const d=DOCS.find(x=>x.id===id);try{await db.doc('docs/'+id).delete();if(d){const as=await claude.use('assets');as&&await as.delete(d.a)}}catch(x){toast('Could not delete: '+(x&&x.message||x))}}
+async function saveSvc(){const d=val('vD'),v=vid(val('vV'));if(!d)return toast('Enter the date');if(!V[v])return toast('Pick a valid vehicle');
+  if(await add({d,v,t:$('#vT').value,c:+val('vC')||0,g:val('vG'),k:+val('vK')||0,n:val('vN'),w:val('vW')},'service')){if($('#vR').checked&&V[v].st==='M')await add({t:'vstat',d,v,s:'A'});['vV','vC','vG','vK','vN','vW'].forEach(i=>$('#'+i).value='');$('#vR').checked=false;toast('Service record saved')}}
+function expRep(){dlCsv('report_'+($('#pX').value==='m'?'monthly':'weekly')+'.csv',csv([['Period','Rent billed','Collected','Allotments','Returns','Deployed end','Charges raised','SD received','Service cost','Calls','New riders'],...REP.map(b=>[b.k,b.rent,b.col,b.al,b.rt,b.dep,b.chg,b.sd,b.svc,b.calls,b.rid])]))}
+
+function profile(id){
+  const r=R[id];if(!r)return;const h=HS[id]||{s:[],p:[]},x=r.x||{},as=MR.asOf,hd={R:'Rental',M:'Maintenance',S:'Security deposit',B:'Booking',O:'Other'},md={B:'Bank',C:'Cash'},dt=v=>/^\d/.test(v)?fd(v):esc(v);
+  const vr=h.s.map(([v,f,l,d,rt])=>({v,f,t:l,d,rt,cur:false}));let app=0;
+  r.sts.forEach(st=>{const a=st.a||addD(as,1),days=Math.max(0,diff(a,st.b||addD(TODAY,1))),rt=days*st.pl,m=st.seed&&vr.find(q=>q.v===st.v&&q.t===as);app+=days;
+    if(m){m.t=st.b;m.cur=!st.b;m.d+=days;m.rt+=rt}else vr.push({v:st.v,f:st.a||'On/before '+fd(as),t:st.b,d:days,rt,cur:!st.b})});
+  vr.sort((a,b)=>(b.cur-a.cur)||String(b.t||'9').localeCompare(String(a.t||'9')));
+  const pays=h.p.map(([d,a,k,m])=>({d,a,h:hd[k]||'Other',m:md[m]||'',f:'',src:'Bank statement'})).concat(EV.filter(e=>e.t==='pay'&&e.r===id).map(e=>({d:e.d,a:+e.a,h:e.h,m:e.m||'',f:e.f||'',src:'Recorded here',id:e.id}))).sort((a,b)=>b.d.localeCompare(a.d)),tot={};pays.forEach(p=>tot[p.h]=(tot[p.h]||0)+p.a);
+  const sv=SVC.filter(q=>vr.some(z=>z.v===q.v&&q.d>=(/^\d/.test(z.f)?z.f:as)&&q.d<=(z.t||TODAY)));
+  const dx=DOCS.filter(q=>q.r===id),by=k=>k?(NM[k]||'Staff '+k.slice(0,6)):'';
+  const tl=EV.filter(e=>e.r===id||e._r===id).map(e=>({d:e.d,ts:e.ts,x:e.t==='allot'?`🚲 Allotted ${e.v} at ${inr(e.p)}/day`:e.t==='submit'?`↩ Returned ${e.v}${e.c==='M'?' (needs maintenance)':''}${e.a?' · charge '+inr(e.a):''}`:e.t==='pay'?`💰 Paid ${inr(e.a)} · ${e.h} · ${e.m||''}`:e.t==='call'?`📞 ${e.s}${e.pd?' · promise '+fd(e.pd):''}`:e.t==='exch'?`🔄 Exchanged ${e.v0} → ${e.v1} (${e.w||''})${e.a?' · charge '+inr(e.a):''}`:'👤 Rider added',n:e.n||'',b:by(e.by)})).concat(dx.map(q=>({d:iso(new Date(q.ts)),ts:q.ts,x:'📄 Document: '+q.t,n:q.nm,b:by(q.by)}))).sort((a,b)=>b.d.localeCompare(a.d)||b.ts-a.ts);
+  const kp=(l,v,n)=>`<div class="card" style="padding:9px"><div class="note" style="text-transform:uppercase;font-size:11px">${l}</div><div style="font-size:18px;font-weight:700">${v}</div><div class="note">${n||''}</div></div>`,
+   tb=(c,rows)=>rows.length?`<div class="tw" style="max-height:220px"><table><tr>${c.map(z=>`<th>${z}</th>`).join('')}</tr>${rows.join('')}</table></div>`:'<p class="note">None recorded.</p>';
+  const o=modal(`<div class="bar" style="justify-content:space-between"><div><h2 style="font-size:18px;margin:0">${esc(r.n)} <span class="note">${id}</span></h2>${tag(r.vs.length?'d':'x',r.vs.length?'Deployed · '+r.vs.join(', '):'Not deployed')} ${tag({High:'x',Medium:'m',Low:'d',Clear:'d'}[r.pr],r.pr+' priority')} ${r.m?`<a href="tel:+91${r.m}">${r.m}</a>`:'no mobile'}${r.em?` · <a href="mailto:${esc(r.em)}">${esc(r.em)}</a>`:''}</div><div><button data-pay="${id}">💰 Payment</button> <button data-allot="${id}">🚲 Allot</button> <button data-call="${id}">📞 Log call</button> <button id="pfX">Close</button></div></div>
+  <div class="g" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:10px 0">${kp('Receivable now',inr(r.due),r.dd?r.dd.toFixed(1)+' days of rent':'')}${kp('Opening ('+fd(as)+')',inr(r.ob))}${kp('Rent billed since',inr(r.rent),'charges '+inr(r.chg))}${kp('Paid since',inr(r.paid))}${kp('Lifetime rent charged',inr((x.rc||0)+r.rent+r.chg))}${kp('Lifetime received',inr((x.rr||0)+(x.mt||0)+r.paid))}${kp('Security deposit held',inr((x.sh||0)+r.sd))}${kp('Plan / day',inr(r.pl))}${kp('First activity',x.fd?fd(x.fd):'–')}${kp('Days deployed',(x.dd||0)+app)}${kp('Vehicles operated',vr.length)}${kp('Last payment',r.lp?fd(r.lp):'Never',r.lp?inr(r.la):'')}</div>
+  ${infoHTML(id)}
+  ${walletHTML(id,kp,tb)}
+  <h2>Vehicles operated</h2>${tb(['Vehicle','Model','From','To','Days','Rent billed'],vr.map(q=>`<tr><td><a data-vp="${q.v}">${q.v}</a></td><td>${esc(V[q.v]?.mo||'')}</td><td>${dt(q.f)}</td><td>${q.cur?tag('d','Current'):q.t?fd(q.t):fd(/^\d/.test(q.f)?q.f:as)}</td><td>${q.d}</td><td>${inr(q.rt)}</td></tr>`))}
+  <h2>Payments made · ${pays.length} receipts · ${inr(pays.reduce((a,p)=>a+p.a,0))}</h2><p class="note">${Object.entries(tot).map(([k,v])=>k+' '+inr(v)).join(' · ')}</p>${tb(['Date','Amount','Head','Mode','Reference','Source'],pays.slice(0,200).map(p=>`<tr><td>${fd(p.d)}</td><td>${inr(p.a)}</td><td>${p.h}</td><td>${p.m}</td><td>${esc(p.f)}</td><td>${p.src}${p.id&&canEdit?` <button data-epay="${p.id}">Edit</button>`:''}</td></tr>`))}
+  <h2>Service on vehicles operated</h2>${tb(['Date','Vehicle','Type','Work','Vendor','Cost'],sv.map(q=>`<tr><td>${fd(q.d)}</td><td>${q.v}</td><td>${esc(q.t)}</td><td>${esc(q.w||'')}</td><td>${esc(q.g||'')}</td><td>${inr(q.c)}</td></tr>`))}
+  <h2>Activity timeline</h2>${tb(['Date','Activity','Note','By'],tl.slice(0,150).map(q=>`<tr><td>${fd(q.d)}</td><td>${esc(q.x)}</td><td>${esc(q.n)}</td><td>${esc(q.b)}</td></tr>`))}
+  <h2>Documents</h2><p class="note">${['Aadhaar','Driving licence','Agreement'].map(t=>(dx.some(q=>q.t===t)?'✔ ':'✘ ')+t).join(' · ')} <button data-updoc="${id}">Upload / manage</button></p>${tb(['Type','File','Expiry'],dx.map(q=>`<tr><td>${esc(q.t)}</td><td><a href="/_blob/${q.a}" target="_blank" rel="noopener">${esc(q.nm||'open')}</a></td><td>${q.e?fd(q.e):'–'}</td></tr>`))}`);
+  const c=o.querySelector('.card');if(c){c.style.maxWidth='1020px';c.style.maxHeight='92vh';c.style.overflow='auto'}
+  o.querySelector('#pfX').onclick=o.close;o.onclick=e=>{if(e.target===o)o.close()};
+}
+
+let BQ=[];const HEADS=['Rental','Maintenance','Security deposit','Other'];
+const pdate=v=>{v=String(v||'').trim();if(/^\d{5}$/.test(v))return iso(new Date(Date.UTC(1899,11,30)+ +v*864e5));let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;m=v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);if(m){let y=+m[3];if(y<100)y+=2000;return`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}return''};
+async function parseBulk(f){
+  if(!window.XLSX)return toast('Spreadsheet reader not loaded — check your connection');
+  let js;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});js=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{raw:false,dateNF:'yyyy-mm-dd',defval:''})}catch(x){return toast('Could not read that file')}
+  const bm={},bn={};RL.forEach(r=>{if(r.m)(bm[r.m]=bm[r.m]||[]).push(r);const k=r.n.toLowerCase();(bn[k]=bn[k]||[]).push(r)});
+  const seen=new Set(),ex=new Set(EV.filter(e=>e.t==='pay').map(e=>[e.r,e.d,+e.a,(e.f||'').toLowerCase()].join('|')));
+  BQ=js.map((o,i)=>{const g=ks=>{for(const k in o)if(ks.includes(k.toLowerCase().replace(/[^a-z]/g,'')))return String(o[k]).trim();return''};
+    let id=g(['vrpid','cid','riderid','id']).toUpperCase(),err='';const mob=g(['mobile','phone','mobilenumber']).replace(/\D/g,'').slice(-10),nm=g(['name','rider','ridername','drivername']).toLowerCase();
+    if(!R[id]){id='';const c=mob.length===10&&bm[mob]?bm[mob]:nm&&bn[nm]?bn[nm]:[];if(c.length===1)id=c[0].id;else err=c.length>1?'Ambiguous rider':'Unknown rider'}
+    const d=pdate(g(['date','paymentdate'])),a=parseFloat(g(['amount','amt','payment','paid']).replace(/[^0-9.\-]/g,'')),hh=g(['head','type','category']).toLowerCase();
+    const h=!hh||hh.startsWith('rent')?'Rental':hh.startsWith('maint')?'Maintenance':hh.startsWith('sec')||hh==='sd'?'Security deposit':'Other',mm=g(['mode','paymentmode']).toLowerCase(),m=mm.includes('upi')?'UPI':/bank|neft|imps|rtgs/.test(mm)?'Bank':'Cash',fr=g(['reference','ref','utr','txn','transactionid']),n=g(['note','remarks','narration']);
+    if(!err&&!d)err='Invalid date';else if(!err&&d<=MR.asOf)err='Date on/before '+fd(MR.asOf);else if(!err&&!(a>0))err='Invalid amount';
+    const key=[id,d,a,fr.toLowerCase()].join('|');let dup='';if(!err){if(ex.has(key))dup='Already recorded';else if(seen.has(key))dup='Duplicate in file';seen.add(key)}
+    return{i:i+2,id,d,a,h,m,f:fr,n,err,dup}});
+  renderBulk();
+}
+function renderBulk(){
+  const ok=BQ.filter(q=>!q.err&&!q.dup),b=$('#bGo');b.disabled=!ok.length;b.textContent=ok.length?`Record ${ok.length} payments (${inr(ok.reduce((a,q)=>a+q.a,0))})`:'Record payments';
+  $('#bPv').innerHTML=BQ.length?`<p class="note">${BQ.length} rows read · ${ok.length} valid · ${BQ.filter(q=>q.err).length} with errors · ${BQ.filter(q=>q.dup).length} duplicates</p><table><tr><th>Row</th><th>Date</th><th>VRP ID</th><th>Rider</th><th class="n">Amount</th><th>Head</th><th>Mode</th><th>Reference</th><th>Result</th></tr>`+BQ.slice(0,500).map(q=>`<tr><td>${q.i}</td><td>${q.d?fd(q.d):'–'}</td><td>${q.id}</td><td>${esc(R[q.id]?.n||'')}</td><td class="n">${isNaN(q.a)?'–':inr(q.a)}</td><td>${q.h}</td><td>${q.m}</td><td>${esc(q.f)}</td><td>${q.err?tag('x',q.err):q.dup?tag('m',q.dup+' – skipped'):tag('d','OK')}</td></tr>`).join('')+'</table>':'<p class="note">Choose a file to preview it before anything is recorded.</p>';
+  const G={};EV.filter(e=>e.bk).forEach(e=>{const x=G[e.bk]||(G[e.bk]={k:e.bk,ts:e.ts,by:e.by,n:0,t:0});x.n++;x.t+=+e.a});
+  $('#bH').innerHTML=Object.keys(G).length?'<table><tr><th>Uploaded</th><th>By</th><th class="n">Payments</th><th class="n">Total</th><th></th></tr>'+Object.values(G).sort((a,b)=>b.ts-a.ts).map(x=>`<tr><td>${new Date(x.ts).toLocaleString('en-GB')}</td><td>${esc(x.by?(NM[x.by]||'Staff '+x.by.slice(0,6)):'–')}</td><td class="n">${x.n}</td><td class="n">${inr(x.t)}</td><td>${canEdit?`<button data-undo="${x.k}">Undo upload</button>`:''}</td></tr>`).join('')+'</table>':'<p class="note">No bulk uploads yet.</p>';
+}
+async function goBulk(){const ok=BQ.filter(q=>!q.err&&!q.dup);if(!ok.length)return;const bk='B'+Date.now().toString(36);let n=0;$('#bGo').disabled=true;
+  for(let i=0;i<ok.length;i+=15){await Promise.all(ok.slice(i,i+15).map(q=>add({t:'pay',d:q.d,r:q.id,a:q.a,h:q.h,m:q.m,f:q.f,n:q.n||'Bulk upload',bk}).then(r=>{if(r)n++})));$('#bGo').textContent=`Recording… ${n}/${ok.length}`}
+  toast(`${n} of ${ok.length} payments recorded`);BQ=[];$('#bF').value='';renderBulk()}
+async function undoBulk(bk){if(!confirm('Delete every payment from this upload? Balances will recalculate.'))return;try{await Promise.all(EV.filter(e=>e.bk===bk).map(e=>db.doc('events/'+e.id).delete()));toast('Upload removed')}catch(x){toast('Could not undo: '+(x&&x.message||x))}}
+function sim(from,to,all){
+  const st={};MF.items.forEach(([id,mo,ch,c,r])=>st[id]={mo,ch,s:c,r:c==='D'?r:'',pl:c==='D'&&R[r]?R[r].pl:0});
+  const ap=e=>{if(e.t==='vehicle'&&!st[e.v])st[e.v]={mo:e.mo||'',ch:e.ch||'',s:'A',r:'',pl:0};else if(e.t==='allot'&&st[e.v])Object.assign(st[e.v],{s:'D',r:e.r,pl:+e.p});else if(e.t==='submit'&&st[e.v])Object.assign(st[e.v],{s:e.c==='M'?'M':'A',r:'',pl:0});else if(e.t==='exch'&&st[e.v0]&&st[e.v1]){const rr=st[e.v0].r,p0=st[e.v0].pl;Object.assign(st[e.v0],{s:e.c==='M'?'M':'A',r:'',pl:0});Object.assign(st[e.v1],{s:'D',r:rr||e.r,pl:+e.p||p0})}else if(e.t==='vstat'&&st[e.v]&&st[e.v].s!=='D')st[e.v].s=e.s};
+  let i=0;while(i<EV.length&&EV[i].d<from)ap(EV[i++]);const rows=[],pays=[],sum=[];
+  for(let d=from;d<=to;d=addD(d,1)){const ev=[];while(i<EV.length&&EV[i].d<=d){ev.push(EV[i]);ap(EV[i++])}
+    const pp=ev.filter(e=>e.t==='pay'),paid={},done=new Set();pp.forEach(e=>paid[e.r]=(paid[e.r]||0)+ +e.a);let rent=0;
+    Object.entries(st).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([v,x])=>{if(x.s!=='D'&&!all)return;const first=x.r&&!done.has(x.r);if(first)done.add(x.r);if(x.s==='D')rent+=x.pl;
+      rows.push([d,v,x.mo,x.ch,{D:'Deployed',A:'Available',M:'Maintenance'}[x.s],x.r,R[x.r]?.n||'',x.s==='D'?x.pl:0,first?(paid[x.r]||0):0])});
+    Object.keys(paid).filter(r=>!done.has(r)).forEach(r=>rows.push([d,'—','','','Not deployed',r,R[r]?.n||'',0,paid[r]]));
+    pp.forEach(e=>pays.push([d,e.r,R[e.r]?.n||'',+e.a,e.h,e.m||'',e.f||'',e.n||'',e.by?(NM[e.by]||'Staff '+e.by.slice(0,6)):'']));
+    const V3=Object.values(st),rc=pp.filter(e=>e.h==='Rental'||e.h==='Maintenance').reduce((a,e)=>a+ +e.a,0),sd=pp.filter(e=>e.h==='Security deposit').reduce((a,e)=>a+ +e.a,0),tot=pp.reduce((a,e)=>a+ +e.a,0);
+    sum.push([d,V3.filter(x=>x.s==='D').length,V3.filter(x=>x.s==='A').length,V3.filter(x=>x.s==='M').length,rent,rc,rent?Math.round(rc/rent*100)+'%':'',sd,tot-rc-sd,tot,pp.length,ev.filter(e=>e.t==='allot').length,ev.filter(e=>e.t==='submit').length])}
+  return{rows,pays,sum}}
+const H1=['Date','Vehicle ID','Model','Chassis','Status','VRP ID','Rider','Rent billed (₹)','Payment received (₹)'],H2=['Date','VRP ID','Rider','Amount (₹)','Head','Mode','Reference','Note','Recorded by'],H3=['Date','Deployed','Available','Maintenance','Rent billed (₹)','Rental + maintenance received (₹)','Collection %','Security deposits (₹)','Other receipts (₹)','Total received (₹)','Receipts','Allotments','Returns'];
+function rng(){const f=val('rF'),t=val('rT');return f&&t&&f<=t&&f>MR.asOf&&diff(f,t)<=92?[f,t]:null}
+function renderDaily(){
+  if(!MR)return;if(!$('#rF').value){$('#rT').value=TODAY;$('#rF').value=addD(TODAY,-6)>MR.asOf?addD(TODAY,-6):addD(MR.asOf,1)}
+  const r=rng();if(!r){$('#rS').innerHTML=`<p class="note">Choose a range of up to 92 days, starting after ${fd(MR.asOf)}.</p>`;return}
+  const o=sim(r[0],r[1],false),T=o.sum.reduce((a,x)=>[a[0]+x[4],a[1]+x[5],a[2]+x[9],a[3]+x[10]],[0,0,0,0]);
+  $('#rS').innerHTML=`<p class="note">Totals for the range: rent billed ${inr(T[0])} · rental + maintenance received ${inr(T[1])} · all receipts ${inr(T[2])} (${T[3]})</p><table><tr>${H3.map(h=>`<th>${h}</th>`).join('')}</tr>`+[...o.sum].reverse().map(x=>`<tr><td>${fd(x[0])}</td>${x.slice(1).map((v,i)=>`<td class="n">${[3,4,6,7,8].includes(i)&&typeof v==='number'?inr(v):v}</td>`).join('')}</tr>`).join('')+'</table>'}
+async function dlReport(kind){const r=rng();if(!r)return toast('Choose a range of up to 92 days, starting after '+fd(MR.asOf));const o=sim(r[0],r[1],$('#rA').checked),nm=`daily_sales_${r[0]}_${r[1]}`;
+  if(kind==='c')return dlCsv(nm+'.csv',csv([H1,...o.rows]));if(!window.XLSX)return toast('Excel writer not loaded — try CSV');
+  const wb=XLSX.utils.book_new();[['Summary',[H3,...o.sum]],['Daily Sales',[H1,...o.rows]],['Payments received',[H2,...o.pays]]].forEach(([n,a])=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),n));
+  try{const dl=await claude.use('downloads');if(!dl)throw 0;await dl.save({filename:nm+'.xlsx',data:XLSX.write(wb,{bookType:'xlsx',type:'array'})})}catch(x){if(x&&x.code==='declined')return;toast('Download is not available in this view')}}
+$('#bF').onchange=e=>e.target.files[0]&&parseBulk(e.target.files[0]);$('#bGo').onclick=goBulk;$('#rX').onclick=()=>dlReport('x');$('#rC').onclick=()=>dlReport('c');['rF','rT','rA'].forEach(i=>$('#'+i).onchange=renderDaily);
+$('#bT').onclick=()=>dlCsv('payment_upload_template.csv',csv([['Date','VRP ID','Amount','Head','Mode','Reference','Note'],['2026-11-10','VRP00315','840','Rental','UPI','UTR123456','Sample row - replace']]));
+document.addEventListener('click',e=>{const u=e.target.dataset&&e.target.dataset.undo;if(u)undoBulk(u)});
+
+function ledger(id){const r=R[id],as=MR.asOf,rows=[];
+  r.sts.forEach(st=>{const a=st.a||addD(as,1),end=st.b||addD(TODAY,1);for(let d=a;d<end;d=addD(d,1))rows.push({d,o:0,x:'Daily rent · '+st.v,a:-st.pl})});
+  EV.forEach(e=>{if(e.t==='pay'&&e.r===id&&(e.h==='Rental'||e.h==='Maintenance'))rows.push({d:e.d,o:1,x:`Payment · ${e.h}${e.m?' · '+e.m:''}`,a:+e.a});else if(e.t==='submit'&&e._r===id&&+e.a)rows.push({d:e.d,o:1,x:'Return charge · '+e.v,a:-e.a});else if(e.t==='exch'&&e._r===id&&+e.a)rows.push({d:e.d,o:1,x:'Exchange charge · '+e.v0+' → '+e.v1,a:-e.a})});
+  ADJ.filter(a=>a.r===id).forEach(a=>rows.push({d:a.d,o:1,x:`${a.k==='C'?'Credit':'Debit'} adjustment · ${a.w||''}${a.n?' — '+a.n:''}`,a:a.k==='C'?+a.a:-a.a}));
+  rows.sort((x,y)=>x.d.localeCompare(y.d)||x.o-y.o);let b=-r.ob;rows.forEach(x=>{b+=x.a;x.b=b});return{rows,open:-r.ob,bal:b}}
+const sg=n=>(n<0?'−':'+')+inr(Math.abs(n));
+function walletHTML(id,kp,tb){PID=id;const r=R[id],L=ledger(id),lk=LK[id],net=ADJ.filter(a=>a.r===id).reduce((a,x)=>a+(x.k==='C'?+x.a:-x.a),0);
+  const f=canEdit?`<div class="card" style="padding:10px;margin:8px 0"><b>Ledger adjustment</b><div class="r2"><div><label>Type</label><select id="wK"><option value="C">Credit — add to wallet</option><option value="D">Debit — deduct from wallet</option></select></div><div><label>Amount (₹)</label><input type="number" id="wA"></div></div><div class="r2"><div><label>Reason</label><select id="wW"><option>Referral bonus</option><option>Charging / fuel credit</option><option>Refund</option><option>Waiver</option><option>Penalty / fine</option><option>Damage</option><option>Correction</option><option>Other</option></select></div><div><label>Date</label><input type="date" id="wD" value="${TODAY}"></div></div><label>Note</label><input id="wN"><p><button class="p" data-adj="${id}">Post adjustment</button></p></div>`:'<p class="note">Only editors can adjust the wallet.</p>';
+  const ap=canEdit?(lk?`<p class="note">Rider app: ✔ linked <button data-unlink="${id}">Unlink</button></p>`:`<p class="note">Rider app: not linked. <input id="wQ" placeholder="Rider’s name or email" style="width:200px;display:inline-block"> <button id="wF">Find</button></p><div id="wH"></div>`):'';
+  return `<h2>Wallet</h2><div class="g" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:6px 0">${kp('Wallet balance',inr(L.bal),L.bal<0?'rider owes this':'credit')}${kp('Opening ('+fd(MR.asOf)+')',inr(L.open))}${kp('Adjustments, net',inr(net),'credits less debits')}</div>${ap}${f}${tb(['Date','Entry','Amount','Balance'],[...L.rows].reverse().slice(0,80).map(x=>`<tr><td>${fd(x.d)}</td><td>${esc(x.x)}</td><td>${sg(x.a)}</td><td>${inr(x.b)}</td></tr>`))}`}
+async function doAdj(id){const a=+$('#wA').value,d=$('#wD').value;if(!okD(d))return;if(!(a>0))return toast('Enter the amount');
+  try{await db.collection('adj').add({r:id,k:$('#wK').value,a,d,w:$('#wW').value,n:$('#wN').value.trim(),ts:Date.now(),by:UID});toast('Wallet adjusted');document.querySelectorAll('.mod').forEach(m=>m.remove());setTimeout(()=>profile(id),800)}catch(x){toast('Only editors can adjust the wallet')}}
+let PID='';
+async function findPeople(){const q=$('#wQ').value.trim();if(!U||!U.search)return toast('Search is not available');let h=[];try{h=await U.search(q)}catch(e){}
+  $('#wH').innerHTML=h.length?h.slice(0,8).map(x=>`<button data-link="${esc(x.id)}" data-rid="${PID}">${esc(x.name||'Person')}</button>`).join(' '):'<p class="note">No matching people. The rider must create an account first.</p>'}
+async function linkRider(uid,id){try{await db.doc('links/'+id).set({uid});toast('Rider linked');document.querySelectorAll('.mod').forEach(m=>m.remove());setTimeout(()=>profile(id),600)}catch(x){toast('Only editors can link riders')}}
+async function unlinkRider(id){const uid=LK[id];try{await db.doc('links/'+id).delete();if(uid)await db.doc('wallets/'+uid).delete();delete WS[id];toast('Unlinked');document.querySelectorAll('.mod').forEach(m=>m.remove())}catch(x){toast('Could not unlink')}}
+let WS={},wt=0;
+function syncW(){if(!canEdit||!MR||!db)return;clearTimeout(wt);wt=setTimeout(()=>{const hd={R:'Rental',M:'Maintenance',S:'Security deposit',B:'Booking',O:'Other'};
+  for(const [id,uid] of Object.entries(LK)){const r=R[id];if(!r||!uid)continue;const L=ledger(id),P=(HS[id]?.p||[]).map(p=>[p[0],p[1],hd[p[2]]||'Other']).concat(EV.filter(e=>e.t==='pay'&&e.r===id).map(e=>[e.d,+e.a,e.h])).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8);
+    const o={id,n:r.n,bal:Math.round(L.bal),plan:r.pl,veh:r.vs,lp:r.lp,la:r.la,upd:fd(TODAY),led:[...L.rows].reverse().slice(0,40).map(x=>[x.d,x.x,x.a,Math.round(x.b)]),pay:P},j=JSON.stringify(o);
+    if(WS[id]===j)continue;WS[id]=j;db.doc('wallets/'+uid).set(o).catch(()=>{delete WS[id]})}},2500)}
+async function riderApp(){
+  ['header','nav','main'].forEach(q=>document.querySelector(q).hidden=true);$('#rapp').hidden=false;
+  const tab=w=>{$('#rw').hidden=!w;$('#rr').hidden=w;$('#rtW').classList.toggle('on',w);$('#rtR').classList.toggle('on',!w)};$('#rtW').onclick=()=>tab(true);$('#rtR').onclick=()=>tab(false);
+  $('#rSh').onclick=()=>{const g=i=>$('#'+i).value.trim();if(!g('rn')||g('rm').replace(/\D/g,'').length<10)return toast('Enter your name and 10-digit mobile number');
+    const t=`Rider registration\nName: ${g('rn')}\nMobile: ${g('rm')}\nAddress: ${g('ra')}\nDL no.: ${g('rd')}\nID proof: ${g('ri')}\nReferred by: ${g('rf')}\nEmergency contact: ${g('re')}`;$('#rO').hidden=false;$('#rO').value=t;
+    if(navigator.share)navigator.share({title:'Rider registration',text:t}).catch(()=>{});else{$('#rO').select();toast('Copy this text and send it to the office on WhatsApp')}};
+  let u=null;try{db=await claude.use('db');u=await claude.use('user')}catch(e){}const id=u&&u.id?await u.id():'';
+  if(!db||!id){$('#rw').innerHTML='<div class="card"><p>Please sign in to see your wallet.</p></div>';return}
+  db.doc('wallets/'+id).onSnapshot(s=>{const d=s.exists?s.data():null;
+    $('#rw').innerHTML=d?`<div class="card" style="text-align:center;margin:10px 0"><div class="note">${esc(d.n)} · ${esc(d.id)}</div><div style="font-size:36px;font-weight:800;color:${d.bal<0?'var(--bad)':'var(--ok)'}">${inr(Math.abs(d.bal))}</div><div>${d.bal<0?'To pay — please clear your dues':'Credit balance'}</div><div class="note">Updated ${esc(d.upd)}</div></div>
+    <div class="card" style="margin-bottom:10px"><div class="r2"><div><div class="note">Daily rent</div><b>${inr(d.plan)}</b></div><div><div class="note">Vehicle</div><b>${esc((d.veh||[]).join(', ')||'None')}</b></div></div><p class="note">Last payment: ${d.lp?fd(d.lp)+' · '+inr(d.la):'–'}</p></div>
+    <div class="card" style="margin-bottom:10px"><h2>Wallet activity</h2><div class="tw" style="max-height:320px"><table><tr><th>Date</th><th>Entry</th><th class="n">Amount</th><th class="n">Balance</th></tr>${(d.led||[]).map(x=>`<tr><td>${fd(x[0])}</td><td style="white-space:normal">${esc(x[1])}</td><td class="n" style="color:${x[2]<0?'var(--bad)':'var(--ok)'}">${sg(x[2])}</td><td class="n">${inr(x[3])}</td></tr>`).join('')}</table></div></div>
+    <div class="card"><h2>Recent payments</h2><table>${(d.pay||[]).map(x=>`<tr><td>${fd(x[0])}</td><td>${esc(x[2])}</td><td class="n">${inr(x[1])}</td></tr>`).join('')||'<tr><td>None</td></tr>'}</table></div>`
+    :'<div class="card" style="margin-top:10px"><p><b>Your account is not linked yet.</b></p><p class="note">Ask the office to link this sign-in to your rider profile. Your wallet will appear here once linked.</p></div>'},()=>{$('#rw').innerHTML='<div class="card"><p>Could not load your wallet. Please try again later.</p></div>'})}
+async function addOnb(){const g=i=>$('#'+i).value.trim();if(!g('oN')||g('oM').replace(/\D/g,'').length<10)return toast('Name and 10-digit mobile are required');
+  try{await db.collection('onb').add({n:g('oN'),m:g('oM').replace(/\D/g,'').slice(-10),a:g('oA'),dl:g('oD'),ip:$('#oP').value,rf:g('oF'),ec:g('oE'),note:g('oT'),st:'New',ts:Date.now(),by:UID});['oN','oM','oA','oD','oF','oE','oT'].forEach(i=>$('#'+i).value='');toast('Applicant added')}catch(x){toast('Could not save: '+(x&&x.message||x))}}
+function renderOnb(){const ST=['New','Documents received','Verified','Approved','Rejected','Onboarded'];
+  $('#oL').innerHTML=ONB.length?'<table><tr><th>Added</th><th>Name</th><th>Mobile</th><th>DL no.</th><th>ID proof</th><th>Referred by</th><th>Status</th><th></th></tr>'+ONB.map(o=>`<tr><td>${fd(iso(new Date(o.ts)))}</td><td>${esc(o.n)}</td><td>${esc(o.m)}</td><td>${esc(o.dl||'')}</td><td>${esc(o.ip||'')}</td><td>${esc(o.rf||'')}</td><td><select data-os="${o.id}">${ST.map(x=>`<option ${x===o.st?'selected':''}>${x}</option>`).join('')}</select></td><td>${o.st==='Approved'?`<button data-oc="${o.id}">Create rider</button>`:''}</td></tr>`).join('')+'</table>':'<p class="note">No applicants yet.</p>'}
+function convOnb(id){const o=ONB.find(x=>x.id===id);if(!o)return;newModal('r');$('#nN').value=o.n;$('#nM').value=o.m;toast('Enter a VRP ID, save, then set the status to Onboarded')}
+document.addEventListener('change',e=>{const o=e.target.dataset&&e.target.dataset.os;if(o&&db)db.doc('onb/'+o).update({st:e.target.value}).catch(()=>toast('Could not update status'))});
+
+function detail(k){
+  const Vs=Object.values(V).sort((a,b)=>a.id.localeCompare(b.id)),D=RL.filter(r=>r.due>0).sort((a,b)=>b.due-a.due),nm={D:'Deployed',A:'Available',M:'Maintenance'};
+  const vr=v=>`<tr><td><a data-vp="${v.id}">${v.id}</a></td><td>${esc(v.mo)}</td><td>${esc(v.ch)}</td><td>${tag({D:'d',A:'x',M:'m'}[v.st],nm[v.st])}</td><td>${v.rd?`<a data-prof="${v.rd}">${esc(R[v.rd]?.n||v.rd)}</a>`:'–'}</td><td>${v.rd?esc(R[v.rd]?.m||''):''}</td><td class="n">${diff(v.since,TODAY)}</td><td>${lastSvc(v.id)}</td></tr>`,
+   VH='<tr><th>Vehicle</th><th>Model</th><th>Chassis</th><th>Status</th><th>Rider</th><th>Mobile</th><th class="n">Days in status</th><th>Last service</th></tr>',
+   rr=r=>`<tr><td>${tag({High:'x',Medium:'m',Low:'d',Clear:'d'}[r.pr],r.pr)}</td><td><a data-prof="${r.id}">${r.id}</a></td><td><a data-prof="${r.id}">${esc(r.n)}</a></td><td>${r.m||'–'}</td><td>${r.vs.length?r.vs.map(v=>`<a data-vp="${v}">${v}</a>`).join(', '):'–'}</td><td class="n"><b>${inr(r.due)}</b></td><td class="n">${r.dd?r.dd.toFixed(1):'–'}</td><td>${r.lp?fd(r.lp)+' · '+inr(r.la):'Never'}</td><td>${r.call?esc(r.call.s):'–'}</td></tr>`,
+   RH='<tr><th>Priority</th><th>VRP ID</th><th>Rider</th><th>Mobile</th><th>Vehicle</th><th class="n">Receivable</th><th class="n">Dues (days)</th><th>Last payment</th><th>Last call</th></tr>',
+   pr=e=>`<tr><td>${fd(e.d)}</td><td><a data-prof="${e.r}">${esc(R[e.r]?.n||e.r)}</a></td><td>${e.r}</td><td class="n">${inr(e.a)}</td><td>${esc(e.h)}</td><td>${esc(e.m||'')}</td><td>${esc(e.f||'')}${canEdit?` <button data-epay="${e.id}">Edit</button>`:''}</td></tr>`,PH='<tr><th>Date</th><th>Rider</th><th>VRP ID</th><th class="n">Amount</th><th>Head</th><th>Mode</th><th>Reference</th></tr>';
+  const pays=EV.filter(e=>e.t==='pay'&&(e.h==='Rental'||e.h==='Maintenance')).sort((a,b)=>b.d.localeCompare(a.d)),ds=d=>diff(d,TODAY),xr=e=>`<tr><td>${fd(e.d)}</td><td><a data-prof="${e.r}">${esc(R[e.r]?.n||e.r)}</a></td><td><a data-vp="${e.v0}">${e.v0}</a> → <a data-vp="${e.v1}">${e.v1}</a></td><td>${esc(e.w||'')}</td><td>${e.c==='M'?tag('m','Maintenance'):tag('d','Ready')}</td><td class="n">${e.a?inr(e.a):'–'}</td><td>${esc(e.n||'')}</td></tr>`,XH='<tr><th>Date</th><th>Rider</th><th>Swap</th><th>Reason</th><th>Old vehicle</th><th class="n">Charge</th><th>Note</th></tr>';
+  const defs={fleet:['All vehicles',Vs,vr,VH],dep:['Deployed vehicles and their riders',Vs.filter(v=>v.st==='D'),vr,VH],avail:['Available vehicles',Vs.filter(v=>v.st==='A'),vr,VH],maint:['Vehicles under maintenance',Vs.filter(v=>v.st==='M'),vr,VH],
+    due:['Riders with dues',D,rr,RH],high:['High-priority riders',D.filter(r=>r.pr==='High'),rr,RH],rdep:['Deployed riders with dues',D.filter(r=>r.stn==='Deployed'),rr,RH],rnd:['Not-deployed riders with dues',D.filter(r=>r.stn!=='Deployed'),rr,RH],
+    today:['Collected today',pays.filter(e=>e.d===TODAY),pr,PH],d30:['Collected in the last 30 days',pays.filter(e=>ds(e.d)>=0&&ds(e.d)<30),pr,PH],exch:['EV exchanges',EV.filter(e=>e.t==='exch').reverse(),xr,XH]}[k];
+  if(!defs)return;const [title,rows,fn,hd]=defs,money=k==='today'||k==='d30',isR=hd===RH,sum=money?rows.reduce((a,e)=>a+ +e.a,0):isR?rows.reduce((a,r)=>a+r.due,0):0;
+  const o=modal(`<div class="bar" style="justify-content:space-between;align-items:center"><div><h2 style="font-size:17px;margin:0">${title}</h2><div class="note">${rows.length} ${hd===VH?'vehicles':hd===XH?'exchanges':money?'receipts · '+inr(sum):'riders · '+inr(sum)+' receivable · '+rows.filter(r=>r.pr==='High').length+' high priority'}</div></div><div><button id="dX">Export CSV</button> <button id="dC">Close</button></div></div><label>Filter</label><input id="dq" placeholder="Type to filter this list"><div class="tw" style="max-height:60vh;margin-top:8px"><table><thead>${hd}</thead><tbody id="dtb"></tbody></table></div><p class="note">Click a vehicle or rider name to open its full profile.</p>`);
+  const c=o.querySelector('.card');if(c){c.style.maxWidth='1050px';c.style.maxHeight='92vh';c.style.overflow='auto'}
+  const draw=()=>{const q=o.querySelector('#dq').value.toLowerCase();o.querySelector('#dtb').innerHTML=rows.map(fn).filter(h=>!q||h.replace(/<[^>]+>/g,' ').toLowerCase().includes(q)).join('')||'<tr><td>Nothing to show</td></tr>'};
+  draw();o.querySelector('#dq').oninput=draw;o.querySelector('#dC').onclick=o.close;o.onclick=e=>{if(e.target===o)o.close()};
+  o.querySelector('#dX').onclick=()=>dlCsv(k+'_list.csv',csv([...o.querySelectorAll('tr')].map(t=>[...t.children].map(x=>x.textContent.trim()))));
+}
+function vehicleProfile(id){
+  const v=V[id];if(!v)return;const as=MR.asOf,nm={D:'Deployed',A:'Available',M:'Maintenance'},past=[];
+  for(const r in HS)(HS[r].s||[]).forEach(([vv,f,l,d,rt])=>{if(vv===id)past.push({r,f,t:l,d,rt})});
+  Object.values(R).forEach(r=>r.sts.forEach(st=>{if(st.v===id){const a=st.a||addD(as,1),d=Math.max(0,diff(a,st.b||addD(TODAY,1))),m=st.seed&&past.find(q=>q.r===r.id&&q.t===as);if(m){m.t=st.b;m.d+=d;m.rt+=d*st.pl;m.cur=!st.b}else past.push({r:r.id,f:st.a||'On/before '+fd(as),t:st.b,d,rt:d*st.pl,cur:!st.b})}}));
+  past.sort((a,b)=>String(b.t||'9').localeCompare(String(a.t||'9')));
+  const sv=SVC.filter(s=>s.v===id),ex=EV.filter(e=>e.t==='exch'&&(e.v0===id||e.v1===id)).reverse(),dt=x=>/^\d/.test(x)?fd(x):esc(x);
+  const kp=(l,x,n)=>`<div class="card" style="padding:9px"><div class="note" style="text-transform:uppercase;font-size:11px">${l}</div><div style="font-size:18px;font-weight:700">${x}</div><div class="note">${n||''}</div></div>`,
+   tb=(c,rows)=>rows.length?`<div class="tw" style="max-height:220px"><table><tr>${c.map(z=>`<th>${z}</th>`).join('')}</tr>${rows.join('')}</table></div>`:'<p class="note">None recorded.</p>';
+  const o=modal(`<div class="bar" style="justify-content:space-between"><div><h2 style="font-size:18px;margin:0">${id} <span class="note">${esc(v.mo)}</span></h2>${tag({D:'d',A:'x',M:'m'}[v.st],nm[v.st])} <span class="note">chassis ${esc(v.ch||'–')}</span></div><div><button id="vXc">Close</button></div></div>
+  <div class="g" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:10px 0">${kp('Current rider',v.rd?`<a data-prof="${v.rd}">${esc(R[v.rd]?.n||v.rd)}</a>`:'–',v.rd?esc(R[v.rd]?.m||''):'')}${kp('Days in this status',diff(v.since,TODAY))}${kp('Days deployed (total)',past.reduce((a,q)=>a+q.d,0))}${kp('Riders so far',new Set(past.map(q=>q.r)).size)}${kp('Rent billed (total)',inr(past.reduce((a,q)=>a+q.rt,0)))}${kp('Service cost',inr(sv.reduce((a,s)=>a+ +s.c,0)),sv.length+' records')}${kp('Last service',lastSvc(id))}${kp('Exchanges',ex.length)}</div>
+  <h2>Riders who operated it</h2>${tb(['Rider','From','To','Days','Rent billed'],past.map(q=>`<tr><td><a data-prof="${q.r}">${esc(R[q.r]?.n||q.r)}</a></td><td>${dt(q.f)}</td><td>${q.cur?tag('d','Current'):q.t?fd(q.t):'–'}</td><td>${q.d}</td><td>${inr(q.rt)}</td></tr>`))}
+  <h2>Service history</h2>${tb(['Date','Type','Work','Vendor','Cost','Next due'],sv.map(s=>`<tr><td>${fd(s.d)}</td><td>${esc(s.t)}</td><td>${esc(s.w||'')}</td><td>${esc(s.g||'')}</td><td>${inr(s.c)}</td><td>${s.n?fd(s.n):'–'}</td></tr>`))}
+  <h2>Exchanges</h2>${tb(['Date','Rider','Swap','Reason'],ex.map(e=>`<tr><td>${fd(e.d)}</td><td><a data-prof="${e.r}">${esc(R[e.r]?.n||e.r)}</a></td><td>${e.v0} → ${e.v1}</td><td>${esc(e.w||'')}</td></tr>`))}`);
+  const c=o.querySelector('.card');if(c){c.style.maxWidth='980px';c.style.maxHeight='92vh';c.style.overflow='auto'}o.querySelector('#vXc').onclick=o.close;o.onclick=e=>{if(e.target===o)o.close()}}
+function openEv(id){const e=EV.find(x=>x.id===id);if(!e)return;if(e.r&&R[e.r])profile(e.r);else if(e.v&&V[e.v])vehicleProfile(e.v)}
+document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;if(t.closest('button,input,select,textarea')&&!t.closest('[data-kd]>*,.kc'))return;
+  const v=t.closest('[data-vp]');if(v){vehicleProfile(v.dataset.vp);return}const k=t.closest('[data-kd]');if(k&&!t.closest('a')){detail(k.dataset.kd);return}const x=t.closest('[data-evd]');if(x&&!t.closest('a'))openEv(x.dataset.evd)});
+function exchInfo(){const v=V[vid(val('xO'))],n=V[vid(val('xN'))];$('#xI').textContent=v&&v.st==='D'?`${R[v.rd]?.n||v.rd} is on ${v.id} (${v.mo}) since ${fd(v.since)}${n?' → will move to '+n.id+' ('+n.mo+')':''}`:'';if(v&&v.st==='D'&&R[v.rd]&&!$('#xP').value)$('#xP').value=R[v.rd].pl}
+async function doExch(){const d=val('xD'),v0=vid(val('xO')),v1=vid(val('xN'));if(!okD(d))return;const a=V[v0],b=V[v1];
+  if(!a||a.st!=='D')return toast('Pick the vehicle the rider is currently using');if(!b||b.st!=='A')return toast('Pick an available replacement vehicle');if(v0===v1)return toast('Old and new vehicle must differ');
+  if(await add({t:'exch',d,r:a.rd,v0,v1,c:$('#xC').value,p:+val('xP')||R[a.rd]?.pl||0,a:+val('xA')||0,w:$('#xW').value,n:val('xT')})){['xO','xN','xP','xA','xT'].forEach(i=>$('#'+i).value='');$('#xI').textContent='';toast('Exchange recorded')}}
+function renderExch(){
+  const X=EV.filter(e=>e.t==='exch').reverse(),mo=TODAY.slice(0,7),why={};X.forEach(e=>why[e.w]=(why[e.w]||0)+1);const top=Object.entries(why).sort((a,b)=>b[1]-a[1])[0],per={};X.forEach(e=>per[e.r]=(per[e.r]||0)+1);
+  $('#xk').innerHTML=`Total ${X.length} · this month ${X.filter(e=>e.d.startsWith(mo)).length} · top reason ${top?top[0]+' ('+top[1]+')':'–'} · riders with 2+ exchanges ${Object.values(per).filter(n=>n>1).length} · charges ${inr(X.reduce((a,e)=>a+ +e.a,0))}`;
+  $('#xL').innerHTML=X.length?'<table><tr><th>Date</th><th>Rider</th><th>Old vehicle</th><th>New vehicle</th><th>Reason</th><th>Old vehicle</th><th class="n">Charge</th><th>Note</th><th>By</th></tr>'+X.map(e=>`<tr><td>${fd(e.d)}</td><td><a data-prof="${e.r}">${esc(R[e.r]?.n||e.r)}</a></td><td><a data-vp="${e.v0}">${e.v0}</a></td><td><a data-vp="${e.v1}">${e.v1}</a></td><td>${esc(e.w||'')}</td><td>${e.c==='M'?tag('m','Maintenance'):tag('d','Ready')}</td><td class="n">${e.a?inr(e.a):'–'}</td><td>${esc(e.n||'')}</td><td>${esc(e.by?(NM[e.by]||'Staff '+e.by.slice(0,6)):'–')}</td></tr>`).join('')+'</table>':'<p class="note">No exchanges recorded yet.</p>'}
+$('#bX').onclick=doExch;['xO','xN'].forEach(i=>$('#'+i).oninput=exchInfo);
+
+function infoHTML(id){const r=R[id],G=r.gs||[],u=r.iu,v=x=>x?esc(x):'<span class="note">not recorded</span>',lab=l=>`<div class="note" style="text-transform:uppercase;font-size:11px">${l}</div>`;
+  const top=[['Mobile',r.m],['Email',r.em],['Address',r.ad]].map(([l,x])=>`<div class="card" style="padding:8px">${lab(l)}<div>${v(x)}</div></div>`).join('');
+  const gc=[0,1,2,3].map(i=>{const g=G[i];return `<div class="card" style="padding:8px">${lab('Guarantor '+(i+1))}${g?`<div><b>${esc(g.n)}</b>${g.rel?' · '+esc(g.rel):''}</div><div>${g.m?`<a href="tel:+91${esc(g.m)}">${esc(g.m)}</a>`:'<span class="note">no mobile</span>'}</div>${g.ad?`<div class="note">${esc(g.ad)}</div>`:''}${g.t?`<div class="note">${esc(g.t)}${g.i?' · ending '+esc(g.i):''}</div>`:''}`:'<div class="note">not added</div>'}</div>`}).join('');
+  const blk=i=>{const g=G[i]||{};return `<div class="card" style="padding:10px;margin-top:8px"><b>Guarantor ${i+1}</b><div class="r2"><div><label>Name</label><input id="gN${i}" value="${esc(g.n||'')}"></div><div><label>Relation</label><input id="gR${i}" value="${esc(g.rel||'')}" placeholder="Father, friend, employer…"></div></div><div class="r2"><div><label>Mobile (10 digits)</label><input id="gM${i}" type="tel" value="${esc(g.m||'')}"></div><div><label>ID proof</label><select id="gT${i}">${['','Aadhaar','Voter ID','PAN','Driving licence','Other'].map(x=>`<option ${x===(g.t||'')?'selected':''}>${x}</option>`).join('')}</select></div></div><div class="r2"><div><label>ID number, last 4 digits</label><input id="gI${i}" maxlength="4" value="${esc(g.i||'')}"></div><div><label>Address</label><input id="gA${i}" value="${esc(g.ad||'')}"></div></div></div>`};
+  return `<h2>Contact &amp; guarantor details <span class="note">· ${G.length} of 4 guarantors</span></h2><div class="g" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;margin:6px 0">${top}${gc}</div>${u?`<p class="note">Last updated ${fd(iso(new Date(u.ts)))}${u.by?' by '+esc(NM[u.by]||'Staff '+u.by.slice(0,6)):''}</p>`:''}
+  <details style="margin:6px 0"><summary style="cursor:pointer;font-weight:600">✏️ Edit contact &amp; guarantor details</summary><div class="card" style="padding:10px;margin-top:6px">
+  <div class="r2"><div><label>Mobile (10 digits)</label><input id="iM" type="tel" value="${esc(r.m||'')}"></div><div><label>Email</label><input id="iE" type="email" value="${esc(r.em||'')}"></div></div><label>Address</label><input id="iA" value="${esc(r.ad||'')}">
+  <p class="note" style="margin:10px 0 0">Add up to four guarantors. Leave a block empty to skip it.</p>${[0,1,2,3].map(blk).join('')}
+  <p><button class="p" data-sinfo="${id}">Save details</button></p></div></details>`}
+async function saveInfo(id){const g=i=>$('#'+i).value.trim(),dig=x=>x.replace(/\D/g,'');const m=dig(g('iM'));
+  if(m&&m.length<10)return toast('Rider mobile must be 10 digits');
+  if(g('iE')&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g('iE')))return toast('Enter a valid email address');
+  const gs=[];for(let i=0;i<4;i++){const gm=dig(g('gM'+i)),x={n:g('gN'+i),rel:g('gR'+i),m:gm.slice(-10),ad:g('gA'+i),t:g('gT'+i),i:g('gI'+i).slice(0,4)};
+    if(!(x.n||x.rel||x.m||x.ad||x.t||x.i))continue;if(!x.n)return toast('Guarantor '+(i+1)+': enter a name');if(gm&&gm.length<10)return toast('Guarantor '+(i+1)+': mobile must be 10 digits');gs.push(x)}
+  const o={m:m.slice(-10),em:g('iE'),ad:g('iA'),gs,ts:Date.now(),by:UID};
+  try{await db.doc('riderinfo/'+id).set(o);toast('Details saved');document.querySelectorAll('.mod').forEach(x=>x.remove());setTimeout(()=>profile(id),700)}catch(x){toast('Could not save: '+(x&&x.message||x))}}
+
+function editPay(id){const e=EV.find(x=>x.id===id&&x.t==='pay');if(!e)return toast('Payment not found');if(!canEdit)return toast('Only editors can edit payments');
+  const heads=['Rental','Maintenance','Security deposit','Other'],modes=['Cash','UPI','Bank'],hist=(e.ed||[]).slice().reverse(),wasProfile=[...document.querySelectorAll('.mod')].some(m=>/Wallet balance/.test(m.textContent));
+  const o=modal(`<h2>Edit payment</h2><p class="note">${esc(R[e.r]?.n||e.r)}${e.ts?' · recorded '+fd(iso(new Date(e.ts))):''}${e.bk?' · from a bulk upload / import':''}</p>
+  <div class="r2"><div><label>Date</label><input type="date" id="epD" value="${e.d}"></div><div><label>Amount (₹)</label><input type="number" id="epA" value="${+e.a}"></div></div>
+  <label>Rider (VRP ID or name)</label><input id="epR" list="rl" value="${e.r} — ${esc(R[e.r]?.n||'')}">
+  <div class="r2"><div><label>Head</label><select id="epH">${heads.map(x=>`<option ${x===e.h?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Mode</label><select id="epM">${modes.map(x=>`<option ${x===e.m?'selected':''}>${x}</option>`).join('')}</select></div></div>
+  <div class="r2"><div><label>Reference</label><input id="epF" value="${esc(e.f||'')}"></div><div><label>Note</label><input id="epN" value="${esc(e.n||'')}"></div></div>
+  <p><button class="p" id="epS">Save changes</button> <button id="epX">Cancel</button></p>
+  ${hist.length?`<p class="note"><b>Edit history</b><br>${hist.map(h=>`${new Date(h.ts).toLocaleString('en-GB')} · ${esc(h.by?(NM[h.by]||'Staff '+h.by.slice(0,6)):'–')} · was ${fd(h.o.d)}, ${inr(h.o.a)}, ${esc(h.o.h)}${h.o.r!==e.r?', rider '+esc(h.o.r):''}`).join('<br>')}</p>`:''}`);
+  const g=i=>o.querySelector('#'+i).value.trim();o.querySelector('#epX').onclick=o.close;
+  o.querySelector('#epS').onclick=async()=>{const d=g('epD'),r=rid(g('epR')),a=+g('epA');
+    if(!d)return toast('Enter the date');if(d!==e.d&&!okD(d))return;if(!R[r])return toast('Pick a valid rider');if(!(a>0))return toast('Enter a valid amount');
+    const n={d,r,a,h:g('epH'),m:g('epM'),f:g('epF'),n:g('epN')};
+    if(n.d===e.d&&n.r===e.r&&n.a===+e.a&&n.h===e.h&&n.m===(e.m||'')&&n.f===(e.f||'')&&n.n===(e.n||''))return toast('No changes to save');
+    try{await db.doc('events/'+id).update({...n,ed:[...(e.ed||[]).slice(-9),{ts:Date.now(),by:UID,o:{d:e.d,r:e.r,a:+e.a,h:e.h,m:e.m||'',f:e.f||'',n:e.n||''}}]});toast('Payment updated');document.querySelectorAll('.mod').forEach(m=>m.remove());if(wasProfile)setTimeout(()=>profile(r),700)}catch(x){toast('Could not update: '+(x&&x.message||x))}};
+}
+</script></body></html>
